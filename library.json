@@ -1,0 +1,17 @@
+{
+  "name": "UWU-Lib",
+  "version": "1.0.0",
+  "description": "Library files for the UWU-Firmware",
+  "keywords": ["uwu"],
+  "authors": [
+    {
+      "name": "Bramble"
+    }
+  ],
+  "build": {
+    "includeDir": "include",
+    "srcDir": "src"
+  },
+  "frameworks": ["arduino"],
+  "platforms": ["raspberrypi"]
+}
