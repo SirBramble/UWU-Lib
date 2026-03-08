@@ -15,6 +15,9 @@
 namespace uwu
 {
 
+#define KEYBOARD_NUM_KEYS 93
+#define KEYBAORD_NUM_ROWS 6
+#define KEYBAORD_NUM_COLS 18
 
 inline const uint8_t c_keyboard_row_pins[KEYBAORD_NUM_ROWS] = {2,3,4,5,6,7};
 

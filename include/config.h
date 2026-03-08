@@ -21,18 +21,6 @@
 #define AM_MAX_LOOP 200
 #endif
 
-#ifndef KEYBOARD_NUM_KEYS
-#define KEYBOARD_NUM_KEYS 93
-#endif
-
-#ifndef KEYBAORD_NUM_ROWS
-#define KEYBAORD_NUM_ROWS 6
-#endif
-
-#ifndef KEYBAORD_NUM_COLS
-#define KEYBAORD_NUM_COLS 18
-#endif
-
 #ifndef HID_USB_CONNECTION_TIMEOUT
 #define HID_USB_CONNECTION_TIMEOUT 1000
 #endif
