@@ -106,7 +106,7 @@ void kts1622::write_register(uint8_t reg, uint8_t value)
 
 uint8_t kts1622::read_register(uint8_t reg)
 {
-    m_wire->beginTransmission(address);
+    m_wire->beginTransmission(m_address);
     m_wire->write(reg);
     m_wire->endTransmission();
     m_wire->requestFrom(m_address, 1, true);

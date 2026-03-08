@@ -4,7 +4,7 @@
 #include "memory.h"
 #include "color.h"
 
-#if (IS_MCU_VERSION == 0)
+#if IS_MCU_VERSION == 0
 #include <string>
 #endif
 

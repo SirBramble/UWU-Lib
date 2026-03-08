@@ -2,7 +2,14 @@
 #include "color.h"
 #include "memory.h"
 #include "report_id.h"
-#include <cstring>
+
+
+
+#if IS_MCU_VERSION == 0
+    #include <cstring>
+#else
+    #include <Arduino.h>
+#endif
 
 using namespace uwu;
 
@@ -16,11 +23,19 @@ using namespace uwu;
 //     // p points to "world"
 // }
 
+#if IS_MCU_VERSION == 0
+    #include <cstdlib>
+    #include <stdio.h>
+    #define PRINT(...) printf(__VA_ARGS__)
+#else
+    #include <Arduino.h>
+    #define PRINT(...) Serial.printf(__VA_ARGS__)
+#endif
 
 // Main SM loop
 bool animacro_parser::am_data_parse(const char* c_str, key* k)
 {
-    printf("data_parse: %s\n", c_str);
+    PRINT("data_parse: %s\n", c_str);
     if(c_str == nullptr)
         return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
@@ -43,7 +58,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
         switch (m_am_state)
         {
         case am_state_t::IDLE:
-            printf("IDLE: %c\n", m_am_str[m_am_pos]);
+            PRINT("IDLE: %c\n", m_am_str[m_am_pos]);
             if(m_am_str[m_am_pos] == '\0')
                 break;
 

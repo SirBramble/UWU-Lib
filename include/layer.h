@@ -4,6 +4,10 @@
 #include "color.h"
 #include "key.h"
 
+#if IS_MCU_VERSION != 0
+    #include <Arduino.h>
+#endif
+
 namespace uwu
 {
 

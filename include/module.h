@@ -3,13 +3,10 @@
 #include "animacro.h"
 #include "layer.h"
 #include "lwjson.h"
+#include "config.h"
 
-#ifndef MAX_NUM_LAYERS
-#define MAX_NUM_LAYERS 16
-#endif
-
-#ifndef IS_MCU_VERSION
-#define IS_MCU_VERSION 1
+#if IS_MCU_VERSION != 0
+    #include <SdFat.h>
 #endif
 
 namespace uwu
@@ -21,6 +18,9 @@ public:
     _module(const char* name) : m_name(name){}
 
     void update_keymap(const char* json_str);
+#if IS_MCU_VERSION != 0
+    void update_keymap_from_file(FatVolume &volume);
+#endif
 
     virtual key* get_key(int key, int layer) = 0;
 

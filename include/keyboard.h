@@ -3,21 +3,14 @@
 
 #include "module.h"
 #include "kts1622.h"
-#include <cstdint>
+#include "rgbled.h"
+#include "config.h"
 
-#ifndef KEYBOARD_NUM_KEYS
-#define KEYBOARD_NUM_KEYS 93
+#if IS_MCU_VERSION == 0
+    #include <cstdint>
+#else
+    #include <Arduino.h>
 #endif
-
-#ifndef KEYBAORD_NUM_ROWS
-#define KEYBAORD_NUM_ROWS 6
-#endif
-
-#ifndef KEYBAORD_NUM_COLS
-#define KEYBAORD_NUM_COLS 18
-#endif
-
-
 
 namespace uwu
 {
@@ -50,15 +43,20 @@ inline const int c_keyboard_led_remap_table[KEYBOARD_NUM_KEYS] =       // KEY ->
 class keyboard : public module<KEYBOARD_NUM_KEYS>
 {
 public:
-    keyboard(const char* name, kts1622* expander) : module(name, c_keyboard_led_remap_table), m_expander(expander){}
+    keyboard(const char* name, kts1622* expander, rgbled* rgbled) :
+        module(name, c_keyboard_led_remap_table),
+        m_expander(expander),
+        m_rgbled(rgbled)
+        {}
     bool init();
     void update();
 private:
-    void pin_mode(uint8_t pin, uint8_t mode);
-    void digital_write(uint8_t pin, uint8_t mode);
+    void pin_mode(uint8_t pin, PinMode mode);
+    void digital_write(uint8_t pin, PinStatus state);
     bool digital_read(uint8_t pin);
 
     kts1622* m_expander = nullptr;
+    rgbled* m_rgbled = nullptr;
 
 };
 

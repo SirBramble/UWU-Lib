@@ -4,10 +4,12 @@
 #include "color.h"
 #include "key.h"
 #include "keycodes.h"
-#include <cstddef>
+#include "config.h"
 
-#ifndef AM_MAX_LOOP
-#define AM_MAX_LOOP 200
+#if IS_MCU_VERSION == 0
+    #include <cstddef>
+#else
+    #include <Arduino.h>
 #endif
 
 namespace uwu {

@@ -4,7 +4,8 @@
 #include <cstdint>
 
 #if IS_MCU_VERSION != 0
-#include <arduino.h>
+#include <Arduino.h>
+#include <Wire.h>
 #else
 typedef enum {
   INPUT            = 0x0,
