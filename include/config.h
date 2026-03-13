@@ -5,6 +5,10 @@
 #define IS_MCU_VERSION 1
 #endif
 
+#ifndef LED_MAX_BRIGHTNESS
+#define LED_MAX_BRIGHTNESS 50
+#endif
+
 #ifndef CONFIG_FILE_PATH
 #define CONFIG_FILE_PATH "/config.json"
 #endif

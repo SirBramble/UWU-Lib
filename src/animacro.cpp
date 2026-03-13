@@ -6,9 +6,12 @@
 
 
 #if IS_MCU_VERSION == 0
-    #include <cstring>
+    #include <cstdlib>
+    #include <stdio.h>
+    #define PRINT(...) printf(__VA_ARGS__)
 #else
     #include <Arduino.h>
+    #define PRINT(...) Serial.printf(__VA_ARGS__)
 #endif
 
 using namespace uwu;
@@ -22,15 +25,6 @@ using namespace uwu;
 // if (p) {
 //     // p points to "world"
 // }
-
-#if IS_MCU_VERSION == 0
-    #include <cstdlib>
-    #include <stdio.h>
-    #define PRINT(...) printf(__VA_ARGS__)
-#else
-    #include <Arduino.h>
-    #define PRINT(...) Serial.printf(__VA_ARGS__)
-#endif
 
 // Main SM loop
 bool animacro_parser::am_data_parse(const char* c_str, key* k)
@@ -88,16 +82,16 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::DONE:
-            printf("DONE\n");
+            PRINT("DONE\n");
             return true;
             break;
         case am_state_t::ERROR:
-            printf("ERROR\n");
+            PRINT("ERROR\n");
             return false;
             break;
         // *************** COMMAND PARSE *************** //
         case am_state_t::COMMAND_N:
-            printf("COMMAND_N\n");
+            PRINT("COMMAND_N\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'U':
@@ -109,7 +103,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_NU:
-            printf("COMMAND_NU\n");
+            PRINT("COMMAND_NU\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'L':
@@ -121,7 +115,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_NUL:
-            printf("COMMAND_NUL\n");
+            PRINT("COMMAND_NUL\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'L':
@@ -133,7 +127,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_NULL:
-            printf("COMMAND_NULL\n");
+            PRINT("COMMAND_NULL\n");
             switch (m_am_str[m_am_pos])
             {
                 default:
@@ -144,7 +138,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_S:
-            printf("COMMAND_S\n");
+            PRINT("COMMAND_S\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'T':
@@ -156,7 +150,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_ST:
-            printf("COMMAND_ST\n");
+            PRINT("COMMAND_ST\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'R':
@@ -168,7 +162,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_STR:
-            printf("COMMAND_STR\n");
+            PRINT("COMMAND_STR\n");
             switch (m_am_str[m_am_pos])
             {
                 case 'G':
@@ -180,7 +174,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND_STRG:
-            printf("COMMAND_STRG\n");
+            PRINT("COMMAND_STRG\n");
             switch (m_am_str[m_am_pos])
             {
                 default:
@@ -204,7 +198,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
 
 bool animacro_parser::am_color_parse(const char* c_str, color_t* color)
 {
-    printf("color_parse: %s\n", c_str);
+    PRINT("color_parse: %s\n", c_str);
     if(c_str == nullptr)
         return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
@@ -215,65 +209,63 @@ bool animacro_parser::am_color_parse(const char* c_str, color_t* color)
 
     if(strcmp(c_str, "blue") == 0 || strcmp(c_str, "BLUE") == 0 || strcmp(c_str, "Blue") == 0)
     {
-        *color = {0,0,255,0};
+        *color = {.r=0,.g=0,.b=255,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "cyan") == 0 || strcmp(c_str, "CYAN") == 0 || strcmp(c_str, "Cyan") == 0)
     {
-        *color = {0,255,255,0};
+        *color = {.r=0,.g=255,.b=255,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "green") == 0 || strcmp(c_str, "GREEN") == 0 || strcmp(c_str, "Green") == 0)
     {
-        *color = {0,255,0,0};
+        *color = {.r=0,.g=255,.b=0,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "magenta") == 0 || strcmp(c_str, "MAGENTA") == 0 || strcmp(c_str, "Magenta") == 0)
     {
-        *color = {255,0,255,0};
+        *color = {.r=255,.g=0,.b=255,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "orange") == 0 || strcmp(c_str, "ORANGE") == 0 || strcmp(c_str, "Orange") == 0)
     {
-        *color = {255,165,0,0};
+        *color = {.r=255,.g=165,.b=0,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "purple") == 0 || strcmp(c_str, "PURPLE") == 0 || strcmp(c_str, "Purple") == 0)
     {
-        *color = {255,0,255,0};
+        *color = {.r=255,.g=0,.b=255,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "red") == 0 || strcmp(c_str, "RED") == 0 || strcmp(c_str, "Red") == 0)
     {
-        *color = {255,0,0,0};
+        *color = {.r=255,.g=0,.b=0,.a=0};
         return true;
     }
     if(strcmp(c_str, "white") == 0 || strcmp(c_str, "WHITE") == 0 || strcmp(c_str, "White") == 0)
     {
-        *color = {255,255,255,0};
+        *color = {.r=255,.g=255,.b=255,.a=0};
         return true;
     }
 
     if(strcmp(c_str, "yellow") == 0 || strcmp(c_str, "YELLOW") == 0 || strcmp(c_str, "Yellow") == 0)
     {
-        *color = {255,255,0,0};
+        *color = {.r=255,.g=255,.b=0,.a=0};
         return true;
     }
-
-
 
     return false;
 }
 
 bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color_effect_t* effect)
 {
-    printf("layer_color_effect_parse: %s\n", c_str);
+    PRINT("layer_color_effect_parse: %s\n", c_str);
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
@@ -302,7 +294,7 @@ bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color
 
 bool animacro_parser::am_key_color_effect_parse(const char* c_str, key_color_effect_t* effect)
 {
-    printf("key_color_effect_parse: %s\n", c_str);
+    PRINT("key_color_effect_parse: %s\n", c_str);
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
@@ -384,7 +376,7 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     //     Do: Append empty node to release all keys and then start new node
     if(keycode_exists)
     {
-        printf("\tCASE 1\n");
+        PRINT("\tCASE 1\n");
         node = push_back_node(node);    // 1. Empty node
         if(node == nullptr)
             return false;
@@ -402,7 +394,7 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     //     Do: Start new node
     else if(node->mod != mod && node->codes[0] != 0)
     {
-        printf("\tCASE 2\n");
+        PRINT("\tCASE 2\n");
         node = push_back_node(node);    // 1. New node
         if(node == nullptr)
             return false;
@@ -415,7 +407,7 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     //    Do: Append to codes
     else if(node->codes[5] == 0)
     {
-        printf("\tCASE 3\n");
+        PRINT("\tCASE 3\n");
         for(int i = 0; i < 6; i++)
         {
             if(node->codes[i] == 0)
@@ -432,7 +424,7 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     //     Do: Start new node
     else
     {
-        printf("\tCASE 4\n");
+        PRINT("\tCASE 4\n");
         node = push_back_node(node);    // 1. New node
         if(node == nullptr)
             return false;

@@ -27,6 +27,8 @@ void _module::update_keymap_from_file(FatVolume &volume)
 {
     PRINT("this: %p", (void*)this);
 
+    while (volume.isBusy());
+
     File32 file = volume.open(CONFIG_FILE_PATH, O_RDONLY);
 
     if (!file) {

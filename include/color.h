@@ -24,9 +24,9 @@ enum class key_color_effect_t : uint8_t
 
 struct color_t
 {
-    uint8_t r, g, b, a;
+    uint8_t r=0, g=0, b=0, a=0;
 
-    constexpr uint32_t to_u32() const {
+    [[nodiscard]] constexpr uint32_t to_u32() const {
         return (uint32_t(r) <<  0) |
                (uint32_t(g) <<  8) |
                (uint32_t(b) << 16) |

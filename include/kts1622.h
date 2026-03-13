@@ -33,6 +33,7 @@ typedef enum {
 #endif
 
 #define IS_EXPANDER_PIN 0x80
+#define CHECK_EXPANDER_PORT 0x40
 
 #define EGP0 0x80
 #define EGP1 0xC0

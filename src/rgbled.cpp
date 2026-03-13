@@ -1,5 +1,7 @@
 #include "rgbled.h"
 #include "color.h"
+#include "config.h"
+#include <cstdint>
 
 using namespace uwu;
 
@@ -31,7 +33,10 @@ void rgbled::send()
     for (int i = 0; i < m_led_count; i++)
     {
         color_t c = m_key_colors[i];
-        m_pixels.setPixelColor(i, m_pixels.Color(c.r, c.g, c.b));
+        uint16_t r = (c.r*LED_MAX_BRIGHTNESS)/255;
+        uint16_t g = (c.g*LED_MAX_BRIGHTNESS)/255;
+        uint16_t b = (c.b*LED_MAX_BRIGHTNESS)/255;
+        m_pixels.setPixelColor(i, m_pixels.Color(r, g, b));
     }
     m_pixels.show();
 }

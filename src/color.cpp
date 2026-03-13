@@ -1,81 +1,86 @@
 #include "color.h"
 #include <cstdint>
+#include <cstdio>
+
+#if IS_MCU_VERSION != 0
+#include <Arduino.h>
+#endif
 
 using namespace uwu;
 
-inline color_t rainbow_next(color_t c, uint8_t pos_inc)
+inline color_t rainbow_next(color_t c, uint16_t pos_inc)
 {
-    int16_t r = c.r;
-    int16_t g = c.g;
-    int16_t b = c.b;
+    int r = c.r;
+    int g = c.g;
+    int b = c.b;
 
-    // Red → Yellow
-    if (r == 255 && g < 255 && b == 0)
-    {
-        g = g + pos_inc;
-        if(g > 255)
-        {
-            r -= g-255;
-            g = 255;
-        }
-    }
-    // Yellow → Green
-    else if (g == 255 && r > 0 && b == 0)
-    {
-        r -= pos_inc;
-        if(r < 0)
-        {
-            b -= r; //b += -r
-            r = 0;
-        }
+    // Recover invalid input
+    bool valid =
+        (r == 255 && g >= 0 && g <= 255 && b == 0) ||
+        (r >= 0 && r <= 255 && g == 255 && b == 0) ||
+        (r == 0 && g == 255 && b >= 0 && b <= 255) ||
+        (r == 0 && g >= 0 && g <= 255 && b == 255) ||
+        (r >= 0 && r <= 255 && g == 0 && b == 255) ||
+        (r == 255 && g == 0 && b >= 0 && b <= 255);
 
+    if (!valid) {
+        r = 255;
+        g = 0;
+        b = 0;
     }
-    // Green → Cyan
-    else if (g == 255 && b < 255 && r == 0)
+
+    while (pos_inc > 0)
     {
-        b += pos_inc;
-        if(b > 255)
-        {
-            g -= b-255;
-            b = 255;
+        // Red -> Yellow
+        if (r == 255 && b == 0 && g < 255) {
+            int step = min<int>(pos_inc, 255 - g);
+            g += step;
+            pos_inc -= step;
         }
-    }
-    // Cyan → Blue
-    else if (b == 255 && g > 0 && r == 0)
-    {
-        g -= pos_inc;
-        if(g < 0)
-        {
-            r -= g; //r += -g
-            g = 0;
+        // Yellow -> Green
+        else if (g == 255 && b == 0 && r > 0) {
+            int step = min<int>(pos_inc, r);
+            r -= step;
+            pos_inc -= step;
         }
-    }
-    // Blue → Magenta
-    else if (b == 255 && r < 255 && g == 0)
-    {
-        r += pos_inc;
-        if(r > 255)
-        {
-            b -= r-255;
+        // Green -> Cyan
+        else if (r == 0 && g == 255 && b < 255) {
+            int step = min<int>(pos_inc, 255 - b);
+            b += step;
+            pos_inc -= step;
+        }
+        // Cyan -> Blue
+        else if (r == 0 && b == 255 && g > 0) {
+            int step = min<int>(pos_inc, g);
+            g -= step;
+            pos_inc -= step;
+        }
+        // Blue -> Magenta
+        else if (g == 0 && b == 255 && r < 255) {
+            int step = min<int>(pos_inc, 255 - r);
+            r += step;
+            pos_inc -= step;
+        }
+        // Magenta -> Red
+        else if (r == 255 && g == 0 && b > 0) {
+            int step = min<int>(pos_inc, b);
+            b -= step;
+            pos_inc -= step;
+        }
+        else {
             r = 255;
-        }
-    }
-    // Magenta → Red
-    else if (r == 255 && b > 0 && g == 0)
-    {
-        b -= pos_inc;
-        if(b < 0)
-        {
-            r += b; //r -= -b
+            g = 0;
             b = 0;
+            break;
         }
-    }
-    else
-    {
-        r = 255; g = 0; b = 0;
     }
 
-    return color_t{ static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), c.a };
+    return color_t{
+        .r = static_cast<uint8_t>(r),
+        .g = static_cast<uint8_t>(g),
+        .b = static_cast<uint8_t>(b),
+        .a = c.a
+    };
 }
 
 
@@ -87,6 +92,8 @@ bool uwu::apply_layer_color_effect(layer_color_effect_t effect, uint8_t speed, c
     if(size == 0)
         return false;
 
+    static int base_color_index = 0;
+
     switch (effect)
     {
         case layer_color_effect_t::NONE:
@@ -96,8 +103,12 @@ bool uwu::apply_layer_color_effect(layer_color_effect_t effect, uint8_t speed, c
             break;
         case layer_color_effect_t::RAINBOW:
             for(int i = 0; i < size; i++)
-                if(key_colors[i].a == 0)
-                  key_colors[i] = rainbow_next(key_colors[0], (i+1) * speed);
+            {
+                if (key_colors[i].a == 0 && key_colors[base_color_index].a != 0)
+                    base_color_index = i;
+                else if(key_colors[i].a == 0)
+                  key_colors[i] = rainbow_next(key_colors[base_color_index], (i+1) * speed);
+            }
             break;
         case layer_color_effect_t::CONST_COLOR:
             for(int i = 0; i < size; i++)

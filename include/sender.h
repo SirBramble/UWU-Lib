@@ -25,6 +25,8 @@ void send_keycode(keycode_node* root, bool is_single);
 
 void clear_keycode(keycode_node* root, bool is_single);
 
+void sender_loop();
+
 }
 
 #endif // SENDER_H

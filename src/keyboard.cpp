@@ -13,7 +13,7 @@ bool keyboard::init()
     for (int i = 0; i < KEYBAORD_NUM_COLS; i++)
         pinMode(c_keyboard_col_pins[i], INPUT_PULLDOWN);
     
-    uwu::init_sender(HID_USB_CONNECTION_TIMEOUT);
+    // uwu::init_sender(HID_USB_CONNECTION_TIMEOUT);
     m_rgbled->init(get_key_colors());
 #endif
     return module::init();
@@ -84,7 +84,7 @@ void keyboard::digital_write(uint8_t pin, PinStatus state)
 
 bool keyboard::digital_read(uint8_t pin)
 {
-    if(pin & EGP0 || pin & EGP1)
+    if(pin & IS_EXPANDER_PIN)
         return m_expander->digital_read(pin);
     else
         return digitalRead(pin);

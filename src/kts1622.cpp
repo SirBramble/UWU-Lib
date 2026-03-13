@@ -62,10 +62,10 @@ void kts1622::digital_write(uint8_t pin, PinStatus status)
 
 bool kts1622::digital_read(uint8_t pin)
 {
-    uint8_t offset = pin & EGP1 ? 0x01 : 0x00;
+    uint8_t offset = pin & CHECK_EXPANDER_PORT ? 0x01 : 0x00;
     uint8_t _pin = pin & 0x07;
 
-    if(is_irq_set())
+    if(is_irq_set() || !m_using_irq)
         update_input_reg(); // Reading from the "Input Port" registers (0x00 and 0x01) clears all pending IRQ
 
     return m_input_reg[offset] & (1 << _pin);
@@ -101,19 +101,19 @@ void kts1622::write_register(uint8_t reg, uint8_t value)
     m_wire->beginTransmission(m_address);
     m_wire->write(reg);
     m_wire->write(value);
-    m_wire->endTransmission();
+    int err = m_wire->endTransmission();
+    Serial.printf("send err: %d", err);
 }
 
 uint8_t kts1622::read_register(uint8_t reg)
 {
     m_wire->beginTransmission(m_address);
     m_wire->write(reg);
-    m_wire->endTransmission();
+    m_wire->endTransmission(false);
     m_wire->requestFrom(m_address, 1, true);
-
-    if (Wire.available() != 0)
+    while (m_wire->available())
     {
-      return Wire.read();
+        return m_wire->read();
     }
     return 0x00;
 }
