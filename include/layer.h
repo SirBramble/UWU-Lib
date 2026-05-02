@@ -41,7 +41,7 @@ protected:
 };
 
 template<std::size_t N>
-class layer : public _layer
+class layer : public _layer, color_functions
 {
 public:
     bool init(color_t key_colors[N], const int led_remap_table[N])

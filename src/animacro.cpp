@@ -1,4 +1,5 @@
 #include "animacro.h"
+#include "class/hid/hid.h"
 #include "color.h"
 #include "memory.h"
 #include "report_id.h"
@@ -68,6 +69,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
         case am_state_t::COMMAND:
+            PRINT("COMMAND: %c\n", m_am_str[m_am_pos]);
             switch (m_am_str[m_am_pos])
             {
                 case 'S':
@@ -75,6 +77,12 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
                 case 'N':
                     m_am_state = COMMAND_N;
+                    break;
+                case 'L':
+                    m_am_state = COMMAND_L;
+                    break;
+                case '\\':
+                    m_am_state = COMMAND_BACKSLASH;
                     break;
                 default:
                     m_am_state = ERROR;
@@ -90,6 +98,103 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             return false;
             break;
         // *************** COMMAND PARSE *************** //
+        // COMMAND BACKSLASH
+        case am_state_t::COMMAND_BACKSLASH:
+            PRINT("COMMAND_BACKSLASH\n");
+            {
+                bool success = append_keycode('\\');
+                m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                next_char = false;
+            }
+            break;
+        
+        // COMMAND L_KEY
+        case am_state_t::COMMAND_L:
+            PRINT("COMMAND_L\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case '_':
+                    m_am_state = COMMAND_L_;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_L_:
+            PRINT("COMMAND_L_\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'K':
+                    m_am_state = COMMAND_L_K;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_L_K:
+            PRINT("COMMAND_L_K\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_L_KE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_L_KE:
+            PRINT("COMMAND_L_KE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'Y':
+                    m_am_state = COMMAND_L_KEY;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_L_KEY:
+            PRINT("COMMAND_L_KEY\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case '{':
+                    m_num_1 = 0;
+                    m_am_state = COMMAND_L_KEY_BR_OPEN;
+                    break;
+                default:
+                    bool success = append_keycode(HID_KEY_ARROW_LEFT,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_L_KEY_BR_OPEN:
+            PRINT("COMMAND_L_KEY_BR_OPEN\n");
+            if(m_am_str[m_am_pos] >= '0' && m_am_str[m_am_pos] <= '9')
+            {
+                m_num_1 *= 10;
+                m_num_1 += m_am_str[m_am_pos] - '0';
+            }
+            else
+            {
+                m_am_state = COMMAND_L_KEY_BR_CLOSE;
+            }
+            break;
+        case am_state_t::COMMAND_L_KEY_BR_CLOSE:
+            PRINT("COMMAND_L_KEY_BR_CLOSE\n");
+            for(int i = 0; i < m_num_1; i++)
+            {
+                bool success = append_keycode(HID_KEY_ARROW_LEFT,0,RID_KEYBOARD);
+                m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+            }
+            next_char = false;
+            break;
+
+        // Command NULL
         case am_state_t::COMMAND_N:
             PRINT("COMMAND_N\n");
             switch (m_am_str[m_am_pos])
@@ -137,6 +242,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
             }
             break;
+        // COMMAND STRG
         case am_state_t::COMMAND_S:
             PRINT("COMMAND_S\n");
             switch (m_am_str[m_am_pos])
@@ -177,10 +283,26 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             PRINT("COMMAND_STRG\n");
             switch (m_am_str[m_am_pos])
             {
+                case '{':
+                    m_am_state = COMMAND_STRG_BR_OPEN;
+                    break;
                 default:
                     bool success = append_keycode('\0',KEY_MOD_LCTRL,RID_KEYBOARD);
                     m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
                     next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_STRG_BR_OPEN:
+            PRINT("COMMAND_STRG_BR_OPEN\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case '}':
+                    m_am_state = am_state_t::IDLE;
+                    break;
+                default:
+                    bool success = append_keycode(ascii_to_keycode(m_am_str[m_am_pos]),KEY_MOD_LCTRL,RID_KEYBOARD);
+                    m_am_state = success ? m_am_state : am_state_t::ERROR;
                     break;
             }
             break;
@@ -286,6 +408,35 @@ bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color
     if(strcmp(c_str, "const") == 0 || strcmp(c_str, "CONST") == 0 || strcmp(c_str, "Const") == 0)
     {
         *effect = layer_color_effect_t::CONST_COLOR;
+        return true;
+    }
+
+    return false;
+}
+
+bool animacro_parser::am_display_color_effect_parse(const char* c_str, display_color_effect_t* effect)
+{
+    PRINT("layer_color_effect_parse: %s\n", c_str);
+    if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
+        return true;
+    if(effect == nullptr)
+        return false;
+
+    if(strcmp(c_str, "none") == 0 || strcmp(c_str, "NONE") == 0 || strcmp(c_str, "None") == 0)
+    {
+        *effect = display_color_effect_t::NONE;
+        return true;
+    }
+
+    if(strcmp(c_str, "rainbow") == 0 || strcmp(c_str, "RAINBOW") == 0 || strcmp(c_str, "Rainbow") == 0)
+    {
+        *effect = display_color_effect_t::RAINBOW;
+        return true;
+    }
+
+    if(strcmp(c_str, "const") == 0 || strcmp(c_str, "CONST") == 0 || strcmp(c_str, "Const") == 0)
+    {
+        *effect = display_color_effect_t::CONST_COLOR;
         return true;
     }
 
@@ -425,7 +576,12 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     else
     {
         PRINT("\tCASE 4\n");
-        node = push_back_node(node);    // 1. New node
+        node = push_back_node(node);    // 1. Empty node
+        if(node == nullptr)
+            return false;
+        node->r_id = r_id;
+
+        node = push_back_node(node);    // 2. New node
         if(node == nullptr)
             return false;
         node->r_id = r_id;

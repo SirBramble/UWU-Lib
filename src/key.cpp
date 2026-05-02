@@ -7,6 +7,7 @@ using namespace uwu;
 bool key::init(color_t *key_color)
 {
     m_key_color = key_color;
+    free_node(m_root);  // Init can be called several times. If m_root already populated, RESET!
     m_root = uwu::alloc_node();
     if(m_root == nullptr)
         return false;

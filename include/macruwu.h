@@ -1,6 +1,7 @@
 #ifndef MACRUWU_H
 #define MACRUWU_H
 
+#include "led_wall.h"
 #include "module.h"
 #include "kts1622.h"
 #include "rgbled.h"
@@ -37,8 +38,8 @@ inline const int c_macruwu_key_to_led_table[MACRUWU_NUM_KEYS] =       // KEY -> 
 class macruwu : public module<MACRUWU_NUM_KEYS>
 {
 public:
-    macruwu(const char* name, kts1622* expander, rgbled* rgbled) :
-        module(name, c_macruwu_key_to_led_table),
+    macruwu(const char* name, kts1622* expander, rgbled* rgbled, led_wall* led_wall) :
+        module(name, c_macruwu_key_to_led_table, led_wall),
         m_expander(expander),
         m_rgbled(rgbled)
         {}

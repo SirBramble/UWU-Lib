@@ -84,39 +84,94 @@ inline color_t rainbow_next(color_t c, uint16_t pos_inc)
 }
 
 
-bool uwu::apply_layer_color_effect(layer_color_effect_t effect, uint8_t speed, color_t arg_color, color_t *key_colors, std::size_t size)
+bool color_functions::apply_layer_color_effect(layer_color_effect_t effect, uint8_t speed, color_t arg_color, color_t *key_colors, std::size_t size)
 {
-    if(key_colors == nullptr)
+    if (key_colors == nullptr || size == 0)
         return false;
-
-    if(size == 0)
-        return false;
-
-    static int base_color_index = 0;
 
     switch (effect)
     {
         case layer_color_effect_t::NONE:
-            for(std::size_t i = 0; i < size; i++)
-                if(key_colors[i].a == 0)
-                    key_colors[i] = {0,0,0,0};
-            break;
-        case layer_color_effect_t::RAINBOW:
-            for(int i = 0; i < size; i++)
+            for (std::size_t i = 0; i < size; i++)
             {
-                if (key_colors[i].a == 0 && key_colors[base_color_index].a != 0)
-                    base_color_index = i;
-                else if(key_colors[i].a == 0)
-                  key_colors[i] = rainbow_next(key_colors[base_color_index], (i+1) * speed);
+                if (key_colors[i].a == 0)
+                    key_colors[i] = {0, 0, 0, 0};
             }
             break;
+
+        case layer_color_effect_t::RAINBOW:
+        {
+            // advance time once per frame
+            m_layer_rainbow_base = rainbow_next(m_layer_rainbow_base, speed);
+
+            // fixed spatial spacing between LEDs
+            constexpr uint16_t offset_per_led = 8;
+
+            for (std::size_t i = 0; i < size; i++)
+            {
+                if (key_colors[i].a == 0)
+                    key_colors[i] = rainbow_next(m_layer_rainbow_base, i * offset_per_led);
+            }
+            break;
+        }
+
         case layer_color_effect_t::CONST_COLOR:
-            for(int i = 0; i < size; i++)
-                if(key_colors[i].a == 0)
-                  key_colors[i] = arg_color;
-                break;
+            for (std::size_t i = 0; i < size; i++)
+            {
+                if (key_colors[i].a == 0)
+                    key_colors[i] = arg_color;
+            }
+            break;
+
         default:
             break;
     }
+
+    return true;
+}
+
+bool color_functions::apply_display_color_effect(display_color_effect_t effect, uint8_t speed, color_t arg_color, color_t* key_colors, std::size_t size)
+{
+    if (key_colors == nullptr || size == 0)
+        return false;
+
+    switch (effect)
+    {
+        case display_color_effect_t::NONE:
+            for (std::size_t i = 0; i < size; i++)
+            {
+                if (key_colors[i].a == 0)
+                    key_colors[i] = {0, 0, 0, 0};
+            }
+            break;
+
+        case display_color_effect_t::RAINBOW:
+        {
+            // advance time once per frame
+            m_display_rainbow_base = rainbow_next(m_display_rainbow_base, speed);
+
+            // fixed spatial spacing between LEDs
+            constexpr uint16_t offset_per_led = 1;
+
+            for (std::size_t i = 0; i < size; i++)
+            {
+                if (key_colors[i].a == 0)
+                    key_colors[i] = rainbow_next(m_display_rainbow_base, i * offset_per_led);
+            }
+            break;
+        }
+
+        case display_color_effect_t::CONST_COLOR:
+            for (std::size_t i = 0; i < size; i++)
+            {
+                if (key_colors[i].a == 0)
+                    key_colors[i] = arg_color;
+            }
+            break;
+
+        default:
+            break;
+    }
+
     return true;
 }

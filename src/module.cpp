@@ -1,6 +1,8 @@
 #include "module.h"
 #include "color.h"
+#include "config.h"
 #include "layer.h"
+#include "led_wall.h"
 #include "lwjson.h"
 
 #if IS_MCU_VERSION == 0
@@ -14,10 +16,10 @@
 
 using namespace uwu;
 
-const int c_stack_pos_name        = 1;
-const int c_stack_pos_layer_level = 4;
-const int c_stack_pos_key_arg     = 7;
-const int c_stack_pos_rgb         = 9;
+const int c_stack_pos_name          = 1;
+const int c_stack_pos_layer_level   = 4;
+const int c_stack_pos_key_arg       = 7;
+const int c_stack_pos_rgb           = 9;
 
 
 
@@ -25,6 +27,9 @@ const int c_stack_pos_rgb         = 9;
 
 void _module::update_keymap_from_file(FatVolume &volume)
 {
+
+    init(); // Reset Structure structure
+
     PRINT("this: %p", (void*)this);
 
     while (volume.isBusy());
@@ -124,7 +129,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     // printf("Got key '%s' with value '%s'\r\n", jsp->stack[jsp->stack_pos-1].meta.name, jsp->data.str.buff);
 
 
-    /******************* Layer Stuff *******************/
+    /*********************************************************************************************** Layer Stuff ***********************************************************************************************/
     /* Check for Layer number */
     if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "layer") == 0)
     {
@@ -187,8 +192,117 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
         return;
     }
 
+    /********************************************************************************************* Display Stuff *********************************************************************************************/
+    /* Check for Display Index */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "display") == 0)
+    {
+        m_parser_display_index = atoi(jsp->data.str.buff);
+        return;
+    }
 
-    /******************* Key Stuff *******************/
+    /* Check for Display Data */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "data") == 0)
+    {
+        m_parser_display_index = jsp->stack[c_stack_pos_layer_level+1].meta.index;
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        // PRINT("data: %s\tdisplay_index: %d\n", jsp->data.str.buff, m_parser_display_index);
+
+        if(node == nullptr)
+            return;
+        
+        // May want to do some parsing or so if data field hold more than the plain text to be displayed
+        snprintf(node->text, LED_WALL_NODE_TEXT_BUFFER_LEN, "%s", jsp->data.str.buff);
+
+        PRINT("data: %s\tdisplay_index: %d\tnode_text: %s\n", jsp->data.str.buff, m_parser_display_index, node->text);
+        // m_parser_key = atoi(jsp->data.str.buff);
+        return;
+    }
+
+    /* Check for Display color effect (String) */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "color_effect") == 0)
+    {
+        PRINT("display effect: %s\n", jsp->data.str.buff);
+
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        if(node == nullptr)
+            return;
+
+        display_color_effect_t e;
+
+        am_display_color_effect_parse(jsp->data.str.buff, &e);
+
+        node->color_effect = e;
+
+        return;
+    }
+
+    /* Check for Display color (String) */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "color") == 0)
+    {
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        if(node == nullptr)
+            return;
+
+        PRINT("color: %s\n", jsp->data.str.buff);
+
+        color_t color;
+        bool success = am_color_parse(jsp->data.str.buff, &color);
+        node->color = color;
+
+        return;
+    }
+
+    /* Check for Display color (RGB Object) */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_key_arg].meta.name, "color") == 0)
+    {
+        PRINT("rgb [%d]: %s\n", jsp->stack[jsp->stack_pos-1].meta.index, jsp->data.str.buff);
+
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        if(node == nullptr)
+            return;
+
+        if(jsp->stack[jsp->stack_pos-1].meta.index == 0)
+            node->color.r = atoi(jsp->data.str.buff);
+        else if(jsp->stack[jsp->stack_pos-1].meta.index == 1)
+            node->color.g = atoi(jsp->data.str.buff);
+        else if(jsp->stack[jsp->stack_pos-1].meta.index == 2)
+            node->color.b = atoi(jsp->data.str.buff);
+
+        return;
+    }
+
+    /* Check for Display color effect speed */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "color_effect_speed") == 0)
+    {
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        if(node == nullptr)
+            return;
+        
+        // May want to do some parsing or so if data field hold more than the plain text to be displayed
+
+        node->color_effect_speed = atoi(jsp->data.str.buff);
+
+        return;
+    }
+
+    /* Check for Display Duration */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "duration") == 0)
+    {
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        // PRINT("data: %s\tdisplay_index: %d\n", jsp->data.str.buff, m_parser_display_index);
+
+        if(node == nullptr)
+            return;
+        
+        // May want to do some parsing or so if data field hold more than the plain text to be displayed
+
+        node->duration = atoi(jsp->data.str.buff);
+
+        PRINT("data: %s\tdisplay_index: %d\tnode_text: %s\n", jsp->data.str.buff, m_parser_display_index, node->text);
+        return;
+    }
+
+    /*********************************************************************************************** Key Stuff ***********************************************************************************************/
     /* Check for key number */
     if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "keys") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "index") == 0)
     {

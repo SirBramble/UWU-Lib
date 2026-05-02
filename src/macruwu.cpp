@@ -53,8 +53,6 @@ void macruwu::update()
         // delay(1);
     }
     // TODO: Put in millis if or something so that color update is only called every x ms and not every time update() is called
-    module::update_layer_color_effect();
-    m_rgbled->send();
 }
 
 void macruwu::pin_mode(uint8_t pin, PinMode mode)

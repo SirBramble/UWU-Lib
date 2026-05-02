@@ -7,9 +7,10 @@ using namespace uwu;
 
 #if IS_MCU_VERSION != 0
 
-rgbled::rgbled(uint8_t pin, size_t led_count) :
+rgbled::rgbled(uint8_t pin, size_t led_count, uint8_t max_brightness) :
     m_pixels(led_count, pin, NEO_GRB + NEO_KHZ800),
-    m_led_count(led_count)
+    m_led_count(led_count),
+    m_max_brightness(max_brightness)
 {
     
 }
@@ -33,9 +34,9 @@ void rgbled::send()
     for (int i = 0; i < m_led_count; i++)
     {
         color_t c = m_key_colors[i];
-        uint16_t r = (c.r*LED_MAX_BRIGHTNESS)/255;
-        uint16_t g = (c.g*LED_MAX_BRIGHTNESS)/255;
-        uint16_t b = (c.b*LED_MAX_BRIGHTNESS)/255;
+        uint16_t r = (c.r*m_max_brightness)/255;
+        uint16_t g = (c.g*m_max_brightness)/255;
+        uint16_t b = (c.b*m_max_brightness)/255;
         m_pixels.setPixelColor(i, m_pixels.Color(r, g, b));
     }
     m_pixels.show();

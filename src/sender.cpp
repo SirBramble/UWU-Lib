@@ -41,21 +41,21 @@ void uwu::init_sender(int bluetooth_timeout)
     usb_hid.setStringDescriptor("UWU HID");
     usb_hid.begin();
 
-    TinyUSBDevice.detach();
-    delay(1000);
-    TinyUSBDevice.attach();
+    // TinyUSBDevice.detach();
+    // delay(1000);
+    // TinyUSBDevice.attach();
 
-    while (!TinyUSBDevice.mounted() && bluetooth_timeout > 0) {
-#ifdef TINYUSB_NEED_POLLING_TASK
-        TinyUSBDevice.task();
-#endif
-        delay(10);
-        bluetooth_timeout -= 10;
-    }
+//     while (!TinyUSBDevice.mounted() && bluetooth_timeout > 0) {
+// #ifdef TINYUSB_NEED_POLLING_TASK
+//         TinyUSBDevice.task();
+// #endif
+//         delay(10);
+//         bluetooth_timeout -= 10;
+//     }
 
-    if (bluetooth_timeout <= 0) {
-        bluetooth_mode = true;
-    }
+//     if (bluetooth_timeout <= 0) {
+//         bluetooth_mode = true;
+//     }
 
     PRINT("mounted=%d valid=%d ready=%d\n",
           TinyUSBDevice.mounted(),
@@ -126,6 +126,10 @@ void uwu::send_keycode_single(keycode_node* root)
 {
     int free_pos = -1;
     int r_id = root->r_id;
+
+    if((uint)r_id >= NUM_REPORT_IDs)
+        return;
+
     single_keycode_node[r_id].r_id = root->r_id;    // nedded as initial rid for single is -1
     for(int i = 0; i < 6; i++)
         if(single_keycode_node[r_id].codes[i] == '\0')
@@ -144,7 +148,6 @@ void uwu::send_keycode_single(keycode_node* root)
     switch (r_id)
     {
         case RID_KEYBOARD:
-            Serial.printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             send_kecycode_keyboard(&single_keycode_node[r_id]);
             break;
         default:

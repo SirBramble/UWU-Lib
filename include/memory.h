@@ -2,14 +2,8 @@
 #define MEMORY_H
 
 #include <cstdint>
+#include "config.h"
 
-#ifndef KEYCODE_MEM_SIZE
-#define KEYCODE_MEM_SIZE 1536
-#endif
-
-#ifndef IS_MCU_VERSION
-#define IS_MCU_VERSION 1
-#endif
 
 #if (IS_MCU_VERSION == 0)
 #include "iostream"

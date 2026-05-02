@@ -17,7 +17,7 @@ namespace uwu
 class rgbled 
 {
 public:
-    rgbled(uint8_t pin, size_t led_count);
+    rgbled(uint8_t pin, size_t led_count, uint8_t max_brightness);
 
     void init(color_t* key_colors);
     void send();
@@ -26,6 +26,8 @@ private:
     size_t m_led_count;
     Adafruit_NeoPixel m_pixels;
     color_t* m_key_colors = nullptr;
+
+    uint8_t m_max_brightness = 0;
 };
 
 }
