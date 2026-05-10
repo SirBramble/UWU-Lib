@@ -25,7 +25,7 @@ class key
 public:
     bool init(color_t *key_color);
 
-    void update(bool pressed);
+    key_state_t update(bool pressed);
 
     keycode_node* get_keycode_root(){return m_root;}
     // Check for send fuction
@@ -65,6 +65,11 @@ public:
     // Color Mode
     void set_color_effect(key_color_effect_t effect){m_color_effect = effect;}
 
+    // Layer jummps
+    void set_target_layer(uint16_t target_layer){m_target_layer = target_layer; m_has_layer_change = true;}
+    uint16_t get_target_layer(){return m_target_layer;}
+    bool has_layer_change(){return m_has_layer_change;}
+
 #if (IS_MCU_VERSION == 0)
     void set_data(char * c_str){m_data = c_str ? c_str : "";}
 #endif
@@ -82,6 +87,9 @@ private:
     color_t m_color_pressed = {0,0,0,0};
     color_t m_color_released = {0,0,0,0};
     color_t *m_key_color = nullptr;             // Use alpha channel to set if key is overriding color. If a==0 then apply layer color. if a!=0 do not override
+
+    uint16_t m_target_layer = 0;
+    bool m_has_layer_change = false;
 
     key_color_effect_t m_color_effect = key_color_effect_t::NONE;
 

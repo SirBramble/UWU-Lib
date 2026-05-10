@@ -93,8 +93,8 @@ void uwu::send_kecycode_keyboard(keycode_node* node)
     }
 
     bool ok = usb_hid.keyboardReport(node->r_id, node->mod, node->codes);
-    PRINT("send ok=%d rid=%u mod=%02X code0=%02X\n",
-          ok, node->r_id, node->mod, node->codes[0]);
+    PRINT("send ok=%d rid=%u mod=%02X codes=%02X, %02X, %02X, %02X, %02X, %02X\n",
+          ok, node->r_id, node->mod, node->codes[0], node->codes[1], node->codes[2], node->codes[3], node->codes[4], node->codes[5]);
 #else
     printf("sending keyboard ");
     print_node(node);
@@ -117,6 +117,7 @@ void uwu::send_keycode_node(keycode_node* node)
         send_kecycode_keyboard(node);
             break;
         default:
+        PRINT("RID fucked!: (%d)", node->r_id);
             break;
     }
 

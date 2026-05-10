@@ -12,10 +12,27 @@ bool key::init(color_t *key_color)
     if(m_root == nullptr)
         return false;
     return true;
+
+    m_has_parse_error = false;
+
+    m_key_state = RELEASED;
+    m_key_toggled = false;
+
+
+    m_color = {0,0,0,0};
+    m_color_pressed = {0,0,0,0};
+    m_color_released = {0,0,0,0};
+
+    m_target_layer = 0;
+    m_has_layer_change = false;
+
+    m_color_effect = key_color_effect_t::NONE;
 }
 
-void key::update(bool pressed)
+key_state_t key::update(bool pressed)
 {
+    key_state_t working_state = m_key_state;    // for return
+
     switch (m_key_state)
     {
         case RELEASED:
@@ -77,6 +94,8 @@ void key::update(bool pressed)
         default:
             break;
     }
+
+    return working_state;   // Return the state that was just handled, not the potential next state
 }
 
 bool key::is_single()

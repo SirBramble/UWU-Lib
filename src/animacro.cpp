@@ -546,7 +546,12 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
     else if(node->mod != mod && node->codes[0] != 0)
     {
         PRINT("\tCASE 2\n");
-        node = push_back_node(node);    // 1. New node
+        node = push_back_node(node);    // 1. Empty node (is mostly overkill, but if same keycode is repeated in next packet (just with different modifier), the key is never released and not sent! e.g.: 'Rr' would only send 'R' and NOT the second 'r')
+        if(node == nullptr)
+            return false;
+        node->r_id = r_id;
+
+        node = push_back_node(node);    // 2. New node
         if(node == nullptr)
             return false;
         node->r_id = r_id;

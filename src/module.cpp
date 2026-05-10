@@ -462,6 +462,33 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
         return;
     }
 
+    /* Check for key layer effect (Int) */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "keys") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "target_layer") == 0)
+    {
+        uint16_t target_layer = atoi(jsp->data.str.buff);
+        key* k = get_key(m_parser_key, m_parser_layer);
+        if(k == nullptr)
+            return;
+        k->set_target_layer(target_layer);
+        return;
+    }
+
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "keys") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "color") == 0)
+    {
+        key* k = get_key(m_parser_key, m_parser_layer);
+        if(k == nullptr)
+            return;
+
+        PRINT("color: %s\n", jsp->data.str.buff);
+
+        color_t color;
+        bool success = am_color_parse(jsp->data.str.buff, &color);
+        k->set_color(color);
+        k->set_parse_error(!success);
+
+        return;
+    }
+
 
 
 }

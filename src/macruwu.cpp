@@ -49,7 +49,9 @@ void macruwu::update()
             Serial.println("NULLUS MULLUS");
             continue;
         }
-        k->update(this->digital_read(c_macruwu_key_to_pin_table[i]));
+        key_state_t state = k->update(this->digital_read(c_macruwu_key_to_pin_table[i]));
+        if(k->has_layer_change() && state == key_state_t::PRESSED_TRANSITION)
+            m_current_layer = k->get_target_layer();
         // delay(1);
     }
     // TODO: Put in millis if or something so that color update is only called every x ms and not every time update() is called
