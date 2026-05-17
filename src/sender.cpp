@@ -3,6 +3,10 @@
 
 using namespace uwu;
 
+#if PICO_CYW43_SUPPORTED == 1
+#include "sender_ble.h"
+#endif
+
 #if IS_MCU_VERSION == 0
     #include <cstdlib>
     #include <stdio.h>
@@ -22,7 +26,7 @@ uint8_t desc_hid_report[] = {
 
 Adafruit_USBD_HID usb_hid((const uint8_t *)desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 // Adafruit_USBD_MIDI usb_midi;
-// MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+// MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
 
 #endif
 
@@ -57,10 +61,13 @@ void uwu::init_sender(int bluetooth_timeout)
 //         bluetooth_mode = true;
 //     }
 
-    PRINT("mounted=%d valid=%d ready=%d\n",
-          TinyUSBDevice.mounted(),
-          usb_hid.isValid(),
-          usb_hid.ready());
+    PRINT("mounted=%d valid=%d ready=%d\n", TinyUSBDevice.mounted(), usb_hid.isValid(), usb_hid.ready());
+
+#if PICO_CYW43_SUPPORTED == 1
+    // TODO: Check for bluetooth mode or something
+    sender_ble_begin();
+#endif
+
 #else
     printf("init_sender\n");
 #endif
@@ -84,10 +91,7 @@ void uwu::send_kecycode_keyboard(keycode_node* node)
         delay(1);
 
         if (millis() - start > 100) {
-            PRINT("HID timeout m=%d v=%d r=%d\n",
-                  TinyUSBDevice.mounted(),
-                  usb_hid.isValid(),
-                  usb_hid.ready());
+            PRINT("HID timeout m=%d v=%d r=%d\n", TinyUSBDevice.mounted(), usb_hid.isValid(), usb_hid.ready());
             return;
         }
     }
@@ -102,7 +106,8 @@ void uwu::send_kecycode_keyboard(keycode_node* node)
     }
     else
     {
-        // TODO: Handle BLE
+        if(sender_ble_running())
+            sendBleKeyboardReport(node);
     }
 
 }

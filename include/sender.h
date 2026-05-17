@@ -2,7 +2,6 @@
 #define SENDER_H
 
 #include "memory.h"
-#include "report_id.h"
 
 #if IS_MCU_VERSION != 0
     #include <Arduino.h>
