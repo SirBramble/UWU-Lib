@@ -46,8 +46,8 @@ inline const int c_keyboard_led_remap_table[KEYBOARD_NUM_KEYS] =       // KEY ->
 class keyboard : public module<KEYBOARD_NUM_KEYS>
 {
 public:
-    keyboard(const char* name, kts1622* expander, rgbled* rgbled) :
-        module(name, c_keyboard_led_remap_table),
+    keyboard(const char* name, kts1622* expander, rgbled* rgbled, led_wall* led_wall) :
+        module(name, c_keyboard_led_remap_table, led_wall),
         m_expander(expander),
         m_rgbled(rgbled)
         {}

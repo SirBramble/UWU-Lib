@@ -288,14 +288,16 @@ public:
   kts1622(uint8_t address, uint8_t int_pin, TwoWire* interface);
 
   void use_irq();
+  void use_polling(uint16_t time_ms);
+  void use_manual();
 
   void pin_mode(uint8_t pin, PinMode mode);
   void digital_write(uint8_t pin, PinStatus status);
   bool digital_read(uint8_t pin);
 
-private:
-
   void update_input_reg();
+
+private:
 
   void write_bit(uint8_t reg, uint8_t bit, bool value);
   bool read_bit(uint8_t reg, uint8_t bit);
@@ -304,12 +306,17 @@ private:
   uint8_t read_register(uint8_t reg);
 
   bool is_irq_set();
+  bool is_poll_set();
 
   uint8_t m_address = 0x00;
   uint8_t m_irq_pin = -1;
   TwoWire* m_wire = nullptr;
 
   bool m_using_irq = false;
+  bool m_using_polling = false;
+  bool m_using_manual = false;
+
+  uint16_t m_polling_time = 0;
 
   uint8_t m_input_reg[2] = {0,0};
 

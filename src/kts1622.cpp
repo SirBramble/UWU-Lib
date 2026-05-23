@@ -16,6 +16,23 @@ void kts1622::use_irq()
     write_register(c_addr_reg_irq_mask_1, 0x00); // Enable IRQ
 
     m_using_irq = true;
+    m_using_polling = false;
+    m_using_manual = false;
+}
+
+void kts1622::use_polling(uint16_t time_ms)
+{
+    m_polling_time = time_ms;
+    m_using_polling = true;
+    m_using_irq = false;
+    m_using_manual = false;
+}
+
+void kts1622::use_manual()
+{
+    m_using_irq = false;
+    m_using_polling = false;
+    m_using_manual = true;
 }
 
 void kts1622::pin_mode(uint8_t pin, PinMode mode)
@@ -65,9 +82,18 @@ bool kts1622::digital_read(uint8_t pin)
     uint8_t offset = pin & CHECK_EXPANDER_PORT ? 0x01 : 0x00;
     uint8_t _pin = pin & 0x07;
 
-    if(is_irq_set() || !m_using_irq)
+    if(m_using_irq && is_irq_set())
+    {
         update_input_reg(); // Reading from the "Input Port" registers (0x00 and 0x01) clears all pending IRQ
-
+    }
+    else if(m_using_polling && is_poll_set())
+    {
+        update_input_reg(); // Reading from the "Input Port" registers (0x00 and 0x01) clears all pending IRQ
+    }
+    else if(!m_using_irq && !m_using_polling && !m_using_manual)
+    {
+        update_input_reg();
+    }
     return m_input_reg[offset] & (1 << _pin);
 }
 
@@ -120,7 +146,18 @@ uint8_t kts1622::read_register(uint8_t reg)
 
 bool kts1622::is_irq_set()
 {
-    return digitalRead(m_irq_pin);
+    return !digitalRead(m_irq_pin); // Open Drain
+}
+
+bool kts1622::is_poll_set()
+{
+    static unsigned long time_prev = 0;
+    if(millis()-m_polling_time > time_prev)
+    {
+        time_prev = millis();
+        return true;
+    }
+    return false;
 }
 
 #else

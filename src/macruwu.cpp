@@ -41,6 +41,7 @@ bool macruwu::digital_read(uint8_t pin)
 #else
 void macruwu::update()
 {
+    m_expander->update_input_reg();
     for (int i = 0; i < MACRUWU_NUM_KEYS; i++)
     {
         key* k = get_key(i);
