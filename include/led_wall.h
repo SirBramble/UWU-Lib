@@ -65,6 +65,7 @@ private:
 
     // Gif Section
     bool load_gif_to_psram(char* path);
+    void unload_gif_from_psram();
     static void gif_draw_cb_trampoline(GIFDRAW *pDraw);
     void gif_draw_cb(GIFDRAW *pDraw);
 

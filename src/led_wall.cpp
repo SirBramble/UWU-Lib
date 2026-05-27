@@ -58,6 +58,8 @@ void led_wall::clear_render_buffer()
 
     m_render_buffer_index = 0;
     m_render_update = true;
+
+    unload_gif_from_psram();
 }
 
 void led_wall::render_update()
@@ -94,9 +96,7 @@ void led_wall::render_update()
             // Only play frame, if a frame was loaded
             if(m_gif_loaded_to_psram)
                 m_gif.playFrame(false, &m_gif_current_frame_delay, this);
-            
-            Serial.printf("m_gif_current_frame_delay: %d\n", m_gif_current_frame_delay);
-
+        
             break;
         default:
             break;
@@ -141,7 +141,6 @@ void led_wall::update()
                 m_render_update = false;
                 render_update();
                 m_gif_time_next_frame = millis() + m_gif_current_frame_delay;
-                Serial.printf("millis() >= m_gif_time_next_frame: %d\n", millis() >= m_gif_time_next_frame);
             }
             break;
         default:
@@ -156,28 +155,20 @@ void led_wall::update()
         bool found = false;
 
         // Unload GIF
-        if (m_gif_data != nullptr)
-        {
-            m_gif.close();
-            free(m_gif_data);
-            m_gif_data = nullptr;
-            m_gif_file_size = 0;
-            m_gif_loaded_to_psram = false;
-        }
+        unload_gif_from_psram();
 
         // Find next valid node
         for (uint8_t step = 1; step < LED_WALL_NODE_RENDER_BUFFER_LEN; ++step)
         {
             uint8_t idx = (start + step) % LED_WALL_NODE_RENDER_BUFFER_LEN; // also search with wrap around to start
             // Different validity checks for different render modes
-            switch(m_render_buffer[m_render_buffer_index].render_mode)
+            switch(m_render_buffer[idx].render_mode)
             {
                 case led_wall_render_mode::TEXT:
                     if (m_render_buffer[idx].text[0] != '\0')
                     {
                         m_render_buffer_index = idx;
                         found = true;
-                        break;
                     }
                     break;
                 case led_wall_render_mode::GIF:
@@ -185,18 +176,22 @@ void led_wall::update()
                     {
                         m_render_buffer_index = idx;
                         found = true;
-                        break;
                     }
-                    break;
                     break;
                 default:
                     break;
             }
+
+            if(found)
+                break;
         }
 
         // If no node is found, something wrong! But we'll ignore that and just go to start...
         if (!found)
+        {
+            Serial.printf("no valid found!!!\n");
             m_render_buffer_index = 0;
+        }
 
         render_update();
 
@@ -230,6 +225,19 @@ bool led_wall::load_gif_to_psram(char* path)
     file.close();
 
     return got == m_gif_file_size;
+}
+
+void led_wall::unload_gif_from_psram()
+{
+    if (m_gif_data != nullptr)
+    {
+        m_gif.close();
+        free(m_gif_data);
+        m_gif_data = nullptr;
+        m_gif_file_size = 0;
+        m_gif_loaded_to_psram = false;
+    }
+
 }
 
 void led_wall::gif_draw_cb_trampoline(GIFDRAW *pDraw)

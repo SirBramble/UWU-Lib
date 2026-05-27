@@ -227,7 +227,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
         if(node == nullptr)
             return;
         
-        snprintf(node->gif_path, LED_WALL_NODE_TEXT_BUFFER_LEN, "%s", jsp->data.str.buff);
+        snprintf(node->gif_path, LED_WALL_NODE_GIF_PATH_BUFFER_LEN, "%s", jsp->data.str.buff);
 
         PRINT("gif_path: %s\tdisplay_index: %d\tnode_gif_path: %s\n", jsp->data.str.buff, m_parser_display_index, node->gif_path);
         return;
@@ -286,9 +286,9 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     }
 
     /* Check for Display color (RGB Object) */
-    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_key_arg].meta.name, "color") == 0)
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[c_stack_pos_key_arg].meta.name, "color") == 0)
     {
-        PRINT("rgb [%d]: %s\n", jsp->stack[jsp->stack_pos-1].meta.index, jsp->data.str.buff);
+        PRINT("display rgb [%d]: %s\n", jsp->stack[jsp->stack_pos-1].meta.index, jsp->data.str.buff);
 
         led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
         if(node == nullptr)

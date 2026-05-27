@@ -165,8 +165,11 @@ bool color_functions::apply_display_color_effect(display_color_effect_t effect, 
             for (std::size_t i = 0; i < size; i++)
             {
                 if (key_colors[i].a == 0)
+                {
                     key_colors[i] = arg_color;
+                }
             }
+            Serial.printf("arg_color: %d %d %d", arg_color.r, arg_color.g, arg_color.b);
             break;
 
         default:
