@@ -5,6 +5,11 @@
 #include "color.h"
 #include "rgbled.h"
 #include "config.h"
+#include <AnimatedGIF.h>
+
+#include <SdFat.h>
+
+#include "led_wall_types.h"
 
 namespace uwu
 {
@@ -12,7 +17,10 @@ namespace uwu
 struct led_wall_render_node
 {
     char text[LED_WALL_NODE_TEXT_BUFFER_LEN] = {'\0'};
+    char gif_path[LED_WALL_NODE_GIF_PATH_BUFFER_LEN] =  {'\0'};
+    uint8_t gif_fps = 1;
     display_color_effect_t color_effect = display_color_effect_t::NONE;
+    led_wall_render_mode render_mode = led_wall_render_mode::TEXT;
     color_t color = {0,0,0,0};
     uint8_t color_effect_speed = 1;
     int64_t duration = 0;
@@ -29,6 +37,8 @@ public:
 
     void clear_render_buffer();
     void render_update();
+
+    void set_flash_volume(FatVolume* flash_volume){m_flash_volume = flash_volume;}
 
     void set_pixel(uint16_t x, uint16_t y, color_t color);
 
@@ -52,6 +62,21 @@ private:
     unsigned long m_time_prev = 0;
     uint8_t m_render_buffer_index = 0;
     bool m_render_update = true;
+
+    // Gif Section
+    bool load_gif_to_psram(char* path);
+    static void gif_draw_cb_trampoline(GIFDRAW *pDraw);
+    void gif_draw_cb(GIFDRAW *pDraw);
+
+    AnimatedGIF m_gif;
+    unsigned long m_gif_time_next_frame = 0;
+    int m_gif_current_frame_delay = 0;
+    uint8_t* m_gif_data = nullptr;
+    size_t m_gif_file_size = 0;
+    bool m_gif_loaded_to_psram = false;
+
+    // Volume pointer storage
+    FatVolume* m_flash_volume = nullptr;
 };
 
 }

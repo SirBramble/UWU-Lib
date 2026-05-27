@@ -2,6 +2,7 @@
 #define ANIMACRO_H
 
 #include "color.h"
+#include "led_wall_types.h"
 #include "key.h"
 #include "keycodes.h"
 #include "config.h"
@@ -33,6 +34,7 @@ public:
     bool am_color_parse(const char* c_str, color_t* color);
     bool am_layer_color_effect_parse(const char* c_str, layer_color_effect_t* effect);
     bool am_display_color_effect_parse(const char* c_str, display_color_effect_t* effect);
+    bool am_display_render_mode_parse(const char* c_str, led_wall_render_mode* mode);
     bool am_key_color_effect_parse(const char* c_str, key_color_effect_t* effect);
 private:
     am_state_t m_am_state = IDLE;

@@ -210,11 +210,44 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
         if(node == nullptr)
             return;
         
-        // May want to do some parsing or so if data field hold more than the plain text to be displayed
+        // May want to do some parsing or so if data field holds more than the plain text to be displayed
         snprintf(node->text, LED_WALL_NODE_TEXT_BUFFER_LEN, "%s", jsp->data.str.buff);
 
         PRINT("data: %s\tdisplay_index: %d\tnode_text: %s\n", jsp->data.str.buff, m_parser_display_index, node->text);
         // m_parser_key = atoi(jsp->data.str.buff);
+        return;
+    }
+
+    /* Check for Display GIF Path */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "gif_path") == 0)
+    {
+        m_parser_display_index = jsp->stack[c_stack_pos_layer_level+1].meta.index;
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+
+        if(node == nullptr)
+            return;
+        
+        snprintf(node->gif_path, LED_WALL_NODE_TEXT_BUFFER_LEN, "%s", jsp->data.str.buff);
+
+        PRINT("gif_path: %s\tdisplay_index: %d\tnode_gif_path: %s\n", jsp->data.str.buff, m_parser_display_index, node->gif_path);
+        return;
+    }
+
+    /* Check for Display render_mode */
+    if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_STRING && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "display") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "render_mode") == 0)
+    {
+        PRINT("render_mode: %s\n", jsp->data.str.buff);
+
+        led_wall_render_node* node = m_led_wall->node(m_parser_display_index);
+        if(node == nullptr)
+            return;
+
+        led_wall_render_mode m;
+
+        am_display_render_mode_parse(jsp->data.str.buff, &m);
+
+        node->render_mode = m;
+
         return;
     }
 

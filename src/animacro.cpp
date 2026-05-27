@@ -416,7 +416,7 @@ bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color
 
 bool animacro_parser::am_display_color_effect_parse(const char* c_str, display_color_effect_t* effect)
 {
-    PRINT("layer_color_effect_parse: %s\n", c_str);
+    PRINT("display_color_effect_parse: %s\n", c_str);
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
@@ -437,6 +437,29 @@ bool animacro_parser::am_display_color_effect_parse(const char* c_str, display_c
     if(strcmp(c_str, "const") == 0 || strcmp(c_str, "CONST") == 0 || strcmp(c_str, "Const") == 0)
     {
         *effect = display_color_effect_t::CONST_COLOR;
+        return true;
+    }
+
+    return false;
+}
+
+bool animacro_parser::am_display_render_mode_parse(const char* c_str, led_wall_render_mode* mode)
+{
+    PRINT("display_mode_parse: %s\n", c_str);
+    if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
+        return true;
+    if(mode == nullptr)
+        return false;
+
+    if(strcmp(c_str, "text") == 0 || strcmp(c_str, "TEXT") == 0 || strcmp(c_str, "Text") == 0)
+    {
+        *mode = led_wall_render_mode::TEXT;
+        return true;
+    }
+
+    if(strcmp(c_str, "gif") == 0 || strcmp(c_str, "GIF") == 0 || strcmp(c_str, "Gif") == 0)
+    {
+        *mode = led_wall_render_mode::GIF;
         return true;
     }
 
