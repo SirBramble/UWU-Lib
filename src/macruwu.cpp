@@ -41,7 +41,7 @@ bool macruwu::digital_read(uint8_t pin)
 #else
 void macruwu::update()
 {
-    m_expander->update_input_reg();
+    m_expander1->update_input_reg();
     for (int i = 0; i < MACRUWU_NUM_KEYS; i++)
     {
         key* k = get_key(i);
@@ -61,7 +61,7 @@ void macruwu::update()
 void macruwu::pin_mode(uint8_t pin, PinMode mode)
 {
     if(pin & IS_EXPANDER_PIN)
-        m_expander->pin_mode(pin, mode);
+        m_expander1->pin_mode(pin, mode);
     else
         pinMode(pin, mode);
 }
@@ -69,7 +69,7 @@ void macruwu::pin_mode(uint8_t pin, PinMode mode)
 void macruwu::digital_write(uint8_t pin, PinStatus state)
 {
     if(pin & IS_EXPANDER_PIN)
-        m_expander->digital_write(pin, state);
+        m_expander1->digital_write(pin, state);
     else
         digitalWrite(pin, state);
 }
@@ -78,7 +78,7 @@ bool macruwu::digital_read(uint8_t pin)
 {
     if(pin & IS_EXPANDER_PIN)
     {
-        return m_expander->digital_read(pin);
+        return m_expander1->digital_read(pin);
     }
     else
         return digitalRead(pin);

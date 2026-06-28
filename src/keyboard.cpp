@@ -21,6 +21,9 @@ bool keyboard::init()
     
     // uwu::init_sender(HID_USB_CONNECTION_TIMEOUT);
     m_rgbled->init(get_key_colors());
+
+    m_expander1->use_manual();
+
 #endif
     return module::init();
 }
@@ -54,7 +57,7 @@ void keyboard::update()
         pin_mode(c_keyboard_row_pins[row], OUTPUT);
         digital_write(c_keyboard_row_pins[row], HIGH);
         // delayMicroseconds(1000);
-        m_expander->update_input_reg();
+        m_expander1->update_input_reg();
         for (int col = KEYBAORD_NUM_COLS - 1; col >= 0; col--)
         {
             if (c_keyboard_key_remap_table[row][col] > -1)
@@ -72,7 +75,7 @@ void keyboard::update()
 void keyboard::pin_mode(uint8_t pin, PinMode mode)
 {
     if(pin & IS_EXPANDER_PIN)
-        m_expander->pin_mode(pin, mode);
+        m_expander1->pin_mode(pin, mode);
     else
         pinMode(pin, mode);
 }
@@ -80,7 +83,7 @@ void keyboard::pin_mode(uint8_t pin, PinMode mode)
 void keyboard::digital_write(uint8_t pin, PinStatus state)
 {
     if(pin & IS_EXPANDER_PIN)
-        m_expander->digital_write(pin, state);
+        m_expander1->digital_write(pin, state);
     else
         digitalWrite(pin, state);
 }
@@ -88,7 +91,7 @@ void keyboard::digital_write(uint8_t pin, PinStatus state)
 bool keyboard::digital_read(uint8_t pin)
 {
     if(pin & IS_EXPANDER_PIN)
-        return m_expander->digital_read(pin);
+        return m_expander1->digital_read(pin);
     else
         return digitalRead(pin);
 }

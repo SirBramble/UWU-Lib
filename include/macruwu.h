@@ -38,9 +38,9 @@ inline const int c_macruwu_key_to_led_table[MACRUWU_NUM_KEYS] =       // KEY -> 
 class macruwu : public module<MACRUWU_NUM_KEYS>
 {
 public:
-    macruwu(const char* name, kts1622* expander, rgbled* rgbled, led_wall* led_wall) :
+    macruwu(const char* name, kts1622* expander1, rgbled* rgbled, led_wall* led_wall) :
         module(name, c_macruwu_key_to_led_table, led_wall),
-        m_expander(expander),
+        m_expander1(expander1),
         m_rgbled(rgbled)
         {}
     bool init();
@@ -50,7 +50,7 @@ private:
     void digital_write(uint8_t pin, PinStatus state);
     bool digital_read(uint8_t pin);
 
-    kts1622* m_expander = nullptr;
+    kts1622* m_expander1 = nullptr;
     rgbled* m_rgbled = nullptr;
 
 };

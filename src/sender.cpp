@@ -33,9 +33,22 @@ Adafruit_USBD_HID usb_hid((const uint8_t *)desc_hid_report, sizeof(desc_hid_repo
 static bool bluetooth_mode = false;
 static keycode_node single_keycode_node[NUM_REPORT_IDs];
 static keycode_node empty_keycode_node = {{0,0,0,0,0,0},0,RID_KEYBOARD,false,nullptr};
+static telemetry* s_telem = nullptr;
 
-void uwu::init_sender(int bluetooth_timeout)
+static bool valid_report_id(int r_id) {
+    return r_id >= 1 && r_id < NUM_REPORT_IDs;
+}
+
+void uwu::init_sender(telemetry* telem)
 {
+    s_telem = telem;
+    s_telem->init();
+
+    for (int i = 0; i < NUM_REPORT_IDs; i++) {
+        single_keycode_node[i] = empty_keycode_node;
+        single_keycode_node[i].r_id = i;
+    }
+
 #if IS_MCU_VERSION != 0
     if (!TinyUSBDevice.isInitialized()) {
         TinyUSBDevice.begin(0);
@@ -96,7 +109,7 @@ void uwu::send_kecycode_keyboard(keycode_node* node)
         }
     }
 
-    bool ok = usb_hid.keyboardReport(node->r_id, node->mod, node->codes);
+    bool ok = usb_hid.keyboardReport(RID_KEYBOARD, node->mod, node->codes);
     PRINT("send ok=%d rid=%u mod=%02X codes=%02X, %02X, %02X, %02X, %02X, %02X\n",
           ok, node->r_id, node->mod, node->codes[0], node->codes[1], node->codes[2], node->codes[3], node->codes[4], node->codes[5]);
 #else
@@ -119,7 +132,11 @@ void uwu::send_keycode_node(keycode_node* node)
     switch (node->r_id)
     {
         case RID_KEYBOARD:
-        send_kecycode_keyboard(node);
+            send_kecycode_keyboard(node);
+            break;
+        case RID_DELAY:
+            delayMicroseconds((node->codes[0]<<24) + (node->codes[1]<<16) + (node->codes[2]<<8) + (node->codes[3]));    // Maybe implement some non blocking option... But will be big ouch...
+            PRINT("DELAY: %d", (node->codes[0]<<24) + (node->codes[1]<<16) + (node->codes[2]<<8) + (node->codes[3]));
             break;
         default:
         PRINT("RID fucked!: (%d)", node->r_id);
@@ -130,13 +147,18 @@ void uwu::send_keycode_node(keycode_node* node)
 
 void uwu::send_keycode_single(keycode_node* root)
 {
+    if(!valid_report_id(root->r_id))
+    {
+        PRINT("Send single with invalid RID: %d", root->r_id);
+        return;
+    }
     int free_pos = -1;
     int r_id = root->r_id;
 
     if((uint)r_id >= NUM_REPORT_IDs)
         return;
 
-    single_keycode_node[r_id].r_id = root->r_id;    // nedded as initial rid for single is -1
+    // single_keycode_node[r_id].r_id = root->r_id; should be initialised in init()
     for(int i = 0; i < 6; i++)
         if(single_keycode_node[r_id].codes[i] == '\0')
         {
@@ -149,7 +171,9 @@ void uwu::send_keycode_single(keycode_node* root)
         PRINT("\tSingle 1\n");
         single_keycode_node[r_id].codes[free_pos] = root->codes[0];
     }
+    Serial.printf("mod before: %d", single_keycode_node[r_id].mod);
     single_keycode_node[r_id].mod |= root->mod;
+    Serial.printf("mod after: %d", single_keycode_node[r_id].mod);
     Serial.print(r_id);Serial.printf(" %d ",root->next);
     switch (r_id)
     {
@@ -196,7 +220,12 @@ void uwu::clear_keycode(keycode_node* root, bool is_single)
         return;
     }
 
-    int r_id = root->r_id;  // ROOT NEVER INITIALISED OR SOMETHING
+    int r_id;
+
+    if(!valid_report_id(root->r_id))
+        r_id = RID_KEYBOARD;
+    else
+        r_id = root->r_id;
 
     Serial.printf("r_id: %d\tnext: %p\tcodes[0]: %d\tcodes[1]: %d\tcodes[2]: %d\tcodes[3]: %d\tcodes[4]: %d\tcodes[5]: %d\t\n", r_id, root->next, root->codes[0], root->codes[1], root->codes[2], root->codes[3], root->codes[4], root->codes[5]);
 
@@ -219,6 +248,17 @@ void uwu::clear_keycode(keycode_node* root, bool is_single)
 
 void uwu::sender_loop()
 {
+    if(s_telem->is_pwr_on() && !s_telem->is_usb_in())
+        bluetooth_mode = true;
+    else
+        bluetooth_mode = false;
+
+    #if PICO_CYW43_SUPPORTED == 1
+    if(bluetooth_mode)
+        sender_ble_update_battery_level(s_telem->get_battery_percent());
+    #endif
+
+
 #ifdef TINYUSB_NEED_POLLING_TASK
     TinyUSBDevice.task();
 #endif

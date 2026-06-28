@@ -102,7 +102,7 @@ bool key::is_single()
 {
     if(m_root->next !=nullptr)
         return false;
-    if(m_root->mod != 0)
+    if(m_root->mod != 0 && (m_root->codes[0] != 0))
         return false;
     for(int i = 1; i < 6; i++)
         if(m_root->codes[i] != 0)

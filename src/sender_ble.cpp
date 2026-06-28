@@ -25,15 +25,20 @@ void sender_ble_begin()
   );
 
   bool ok = PicoBluetoothBLEHID.startHID(
-    "Macruwu3",               // BLE advertising name
-    "Macruwu3 Keyboard",      // HID device name
-    __BLEGetAppearance(),     // keyboard appearance
+    USB_PRODUCT_ID,          // BLE advertising name
+    USB_PRODUCT_ID,          // HID device name
+    __BLEGetAppearance(),    // keyboard appearance
     report_map,
     report_size,
-    100                       // battery %
+    100                      // battery %
   );
 
   sender_ble_started = true;
+}
+
+void sender_ble_update_battery_level(uint8_t level)
+{
+  PicoBluetoothBLEHID.setBattery(level);
 }
 
 bool sender_ble_running()
@@ -42,6 +47,8 @@ bool sender_ble_running()
 }
 
 void sendBleKeyboardReport(uwu::keycode_node* node) {
+  Serial.printf("Conencted: %d",PicoBluetoothBLEHID.connected());
+
     if (!node) return;
     if (!PicoBluetoothBLEHID.connected()) return;
 

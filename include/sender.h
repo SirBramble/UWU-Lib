@@ -2,6 +2,7 @@
 #define SENDER_H
 
 #include "memory.h"
+#include "telemetry.h"
 
 #if IS_MCU_VERSION != 0
     #include <Arduino.h>
@@ -12,7 +13,7 @@
 namespace uwu
 {
 
-void init_sender(int bluetooth_timeout);
+void init_sender(telemetry* telem);
 
 void send_kecycode_keyboard(keycode_node* node);
 
