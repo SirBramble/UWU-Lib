@@ -16,6 +16,7 @@ namespace uwu
 void init_sender(telemetry* telem);
 
 void send_kecycode_keyboard(keycode_node* node);
+void send_kecycode_consumer(keycode_node* node);
 
 void send_keycode_node(keycode_node* node);
 

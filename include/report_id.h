@@ -16,6 +16,8 @@ enum REPORT_ID_enum : uint8_t
     RID_GAMEPAD = 2,
     RID_CONSUMER_CONTROL = 3, // Media, volume etc ..
     RID_DELAY = 128,    // Will add a delay between sending
+    RID_UNUSED = 0xFF
 };
+
 
 #endif // REPORT_ID_H

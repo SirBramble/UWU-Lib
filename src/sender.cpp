@@ -125,6 +125,48 @@ void uwu::send_kecycode_keyboard(keycode_node* node)
 
 }
 
+void uwu::send_kecycode_consumer(keycode_node* node)
+{
+    if (!bluetooth_mode)
+    {
+#if IS_MCU_VERSION != 0
+    if (!TinyUSBDevice.mounted()) {
+        PRINT("USB not mounted\n");
+        return;
+    }
+
+    uint32_t start = millis();
+    while (!usb_hid.ready()) {
+#ifdef TINYUSB_NEED_POLLING_TASK
+        TinyUSBDevice.task();
+#endif
+        delay(1);
+
+        if (millis() - start > 100) {
+            PRINT("HID timeout m=%d v=%d r=%d\n", TinyUSBDevice.mounted(), usb_hid.isValid(), usb_hid.ready());
+            return;
+        }
+    }
+
+    bool ok = usb_hid.sendReport16(RID_CONSUMER_CONTROL, ((static_cast<uint16_t>(node->codes[1])<<8) + static_cast<uint16_t>(node->codes[0])));
+    PRINT("send ok=%d rid=%u mod=%02X codes=%02X, %02X, %02X, %02X, %02X, %02X\n",
+          ok, node->r_id, node->mod, node->codes[0], node->codes[1], node->codes[2], node->codes[3], node->codes[4], node->codes[5]);
+#else
+    printf("sending keyboard ");
+    print_node(node);
+#endif
+    }
+    else
+    {
+        if(sender_ble_running())
+        {
+            // Still needs BLE implementation
+            // sendBleKeyboardReport(node);
+        }
+    }
+
+}
+
 void uwu::send_keycode_node(keycode_node* node)
 {
     if (node == nullptr)
@@ -133,6 +175,9 @@ void uwu::send_keycode_node(keycode_node* node)
     {
         case RID_KEYBOARD:
             send_kecycode_keyboard(node);
+            break;
+        case RID_CONSUMER_CONTROL:
+            send_kecycode_consumer(node);
             break;
         case RID_DELAY:
             delayMicroseconds((node->codes[0]<<24) + (node->codes[1]<<16) + (node->codes[2]<<8) + (node->codes[3]));    // Maybe implement some non blocking option... But will be big ouch...
@@ -155,43 +200,43 @@ void uwu::send_keycode_single(keycode_node* root)
     int free_pos = -1;
     int r_id = root->r_id;
 
-    if((uint)r_id >= NUM_REPORT_IDs)
-        return;
-
-    // single_keycode_node[r_id].r_id = root->r_id; should be initialised in init()
-    for(int i = 0; i < 6; i++)
-        if(single_keycode_node[r_id].codes[i] == '\0')
-        {
-            free_pos = i;
-            break;
-        }
-
-    if(free_pos > -1)
-    {
-        PRINT("\tSingle 1\n");
-        single_keycode_node[r_id].codes[free_pos] = root->codes[0];
-    }
-    Serial.printf("mod before: %d", single_keycode_node[r_id].mod);
-    single_keycode_node[r_id].mod |= root->mod;
-    Serial.printf("mod after: %d", single_keycode_node[r_id].mod);
-    Serial.print(r_id);Serial.printf(" %d ",root->next);
     switch (r_id)
     {
-        case RID_KEYBOARD:
-            send_kecycode_keyboard(&single_keycode_node[r_id]);
-            break;
-        default:
-            break;
+    case RID_CONSUMER_CONTROL:
+        single_keycode_node[r_id].codes[0] = root->codes[0];
+        single_keycode_node[r_id].codes[1] = root->codes[1];
+        break;
+    
+    default:
+        // single_keycode_node[r_id].r_id = root->r_id; should be initialised in init()
+        for(int i = 0; i < 6; i++)
+            if(single_keycode_node[r_id].codes[i] == '\0')
+            {
+                free_pos = i;
+                break;
+            }
+
+        if(free_pos > -1)
+        {
+            PRINT("\tSingle 1\n");
+            single_keycode_node[r_id].codes[free_pos] = root->codes[0];
+        }
+        Serial.printf("mod before: %d", single_keycode_node[r_id].mod);
+        single_keycode_node[r_id].mod |= root->mod;
+        Serial.printf("mod after: %d", single_keycode_node[r_id].mod);
+        Serial.print(r_id);Serial.printf(" %d ",root->next);
+        break;
+    
     }
+
+    send_keycode_node(&single_keycode_node[r_id]);
 }
 
 
 void uwu::send_keycode(keycode_node* root, bool is_single)
 {
     if (root == nullptr)
-    {
         return;
-    }
     
     if(is_single)
     {
@@ -231,18 +276,33 @@ void uwu::clear_keycode(keycode_node* root, bool is_single)
 
     if(is_single)
     {
-         for (int i = 0; i < 6; i++)
+        switch (r_id)
         {
-            if (single_keycode_node[r_id].codes[i] == root->codes[0])
-                single_keycode_node[r_id].codes[i] = 0;
-        }
+        case RID_CONSUMER_CONTROL:
+            single_keycode_node[r_id].codes[0] = 0;
+            single_keycode_node[r_id].codes[1] = 0;
 
-        single_keycode_node[r_id].mod &= ~(root->mod);
-        send_keycode_node(&single_keycode_node[r_id]);
+            send_keycode_node(&single_keycode_node[r_id]);
+            break;
+
+        default:
+            for (int i = 0; i < 6; i++)
+            {
+                if (single_keycode_node[r_id].codes[i] == root->codes[0])
+                    single_keycode_node[r_id].codes[i] = 0;
+            }
+
+            single_keycode_node[r_id].mod &= ~(root->mod);
+
+            send_keycode_node(&single_keycode_node[r_id]);
+            break;
+        }
     }
     else
     {
-        send_keycode_node(&empty_keycode_node);
+        keycode_node empty_keycode_node_rid_cast = empty_keycode_node;
+        empty_keycode_node_rid_cast.r_id = r_id;
+        send_keycode_node(&empty_keycode_node_rid_cast);
     }
 }
 

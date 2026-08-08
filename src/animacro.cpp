@@ -111,6 +111,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 case 'U':
                     m_am_state = COMMAND_U;
                     break;
+                case 'V':
+                    m_am_state = COMMAND_V;
+                    break;
                 case '\\':
                     m_am_state = COMMAND_BACKSLASH;
                     break;
@@ -2308,6 +2311,215 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             next_char = false;
             break;
+        
+        case am_state_t::COMMAND_V:
+            PRINT("COMMAND_V\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'O':
+                    m_am_state = COMMAND_VO;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VO:
+            PRINT("COMMAND_VO\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'L':
+                    m_am_state = COMMAND_VOL;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOL:
+            PRINT("COMMAND_VOL\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'U':
+                    m_am_state = COMMAND_VOLU;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLU:
+            PRINT("COMMAND_VOLU\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'M':
+                    m_am_state = COMMAND_VOLUM;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUM:
+            PRINT("COMMAND_VOLUM\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_VOLUME;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME:
+            PRINT("COMMAND_VOLUME\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case '_':
+                    m_am_state = COMMAND_VOLUME_;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_:
+            PRINT("COMMAND_VOLUME_\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'D':
+                    m_am_state = COMMAND_VOLUME_D;
+                    break;
+                case 'M':
+                    m_am_state = COMMAND_VOLUME_M;
+                    break;
+                case 'U':
+                    m_am_state = COMMAND_VOLUME_U;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+
+        case am_state_t::COMMAND_VOLUME_D:
+            PRINT("COMMAND_VOLUME_D\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'O':
+                    m_am_state = COMMAND_VOLUME_DO;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_DO:
+            PRINT("COMMAND_VOLUME_DO\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'W':
+                    m_am_state = COMMAND_VOLUME_DOW;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_DOW:
+            PRINT("COMMAND_VOLUME_DOW\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'N':
+                    m_am_state = COMMAND_VOLUME_DOWN;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_DOWN:
+            PRINT("COMMAND_VOLUME_DOWN\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(HID_USAGE_CONSUMER_VOLUME_DECREMENT,RID_CONSUMER_CONTROL);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_M:
+            PRINT("COMMAND_VOLUME_M\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'U':
+                    m_am_state = COMMAND_VOLUME_MU;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_MU:
+            PRINT("COMMAND_VOLUME_MU\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'T':
+                    m_am_state = COMMAND_VOLUME_MUT;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_MUT:
+            PRINT("COMMAND_VOLUME_MUT\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_VOLUME_MUTE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_MUTE:
+            PRINT("COMMAND_VOLUME_MUTE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(HID_USAGE_CONSUMER_MUTE,RID_CONSUMER_CONTROL);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_U:
+            PRINT("COMMAND_VOLUME_U\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'P':
+                    m_am_state = COMMAND_VOLUME_UP;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_VOLUME_UP:
+            PRINT("COMMAND_VOLUME_UP\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(HID_USAGE_CONSUMER_VOLUME_INCREMENT,RID_CONSUMER_CONTROL);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
 
         default:
             m_am_state = am_state_t::ERROR;
@@ -2536,7 +2748,7 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
         return false;
 
     // Check for first/malformed node
-    if(node->r_id == (uint8_t)-1)
+    if(node->r_id == RID_UNUSED)
     {
         PRINT("node->r_id: %d\n",node->r_id);
         node->r_id = r_id;
@@ -2647,8 +2859,29 @@ bool animacro_parser::append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id)
         node->mod = mod;
     }
 
-    if(node->r_id == (uint8_t)-1)
+    if(node->r_id == RID_UNUSED)
         node->r_id = r_id;
+
+    return true;
+}
+
+bool animacro_parser::append_keycode(uint16_t keycode_16, uint8_t r_id)
+{
+    keycode_node * node = get_leaf(m_am_key->get_keycode_root());
+    if(node == nullptr)
+        return false;
+
+    // Check if leaf node in use
+    if(node->r_id != RID_UNUSED)
+    {
+        node = push_back_node(node);    // 1. New node
+        if(node == nullptr)
+            return false;
+    }
+
+    node->r_id = r_id;
+    node->codes[0] = static_cast<uint8_t>(keycode_16 & 0xFF);
+    node->codes[1] = static_cast<uint8_t>((keycode_16>>8) & 0xFF);
 
     return true;
 }

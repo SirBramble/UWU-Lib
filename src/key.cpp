@@ -1,5 +1,6 @@
 #include "key.h"
 #include "color.h"
+#include "report_id.h"
 #include "sender.h"
 
 using namespace uwu;
@@ -100,11 +101,19 @@ key_state_t key::update(bool pressed)
 
 bool key::is_single()
 {
+    uint8_t num_allowed_allocated_codes = 1;
+    if(m_root->r_id == RID_CONSUMER_CONTROL)    // exception for all 16-bit reporters
+        num_allowed_allocated_codes = 2;
+
     if(m_root->next !=nullptr)
+    {
+        if(m_root->r_id == RID_CONSUMER_CONTROL)
+            Serial.printf("RID_WITH_CONSUMER has follower!");
         return false;
-    if(m_root->mod != 0 && (m_root->codes[0] != 0))
+    }
+    if(m_root->mod != 0 && (m_root->codes[num_allowed_allocated_codes-1] != 0))
         return false;
-    for(int i = 1; i < 6; i++)
+    for(int i = num_allowed_allocated_codes; i < 6; i++)
         if(m_root->codes[i] != 0)
             return false;
 

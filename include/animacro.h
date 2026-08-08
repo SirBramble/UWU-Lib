@@ -69,6 +69,10 @@ enum am_state_t
     COMMAND_T, COMMAND_TA, COMMAND_TAB,
     COMMAND_U, COMMAND_UE,
                COMMAND_UP, COMMAND_UP_, COMMAND_UP_K, COMMAND_UP_KE, COMMAND_UP_KEY, COMMAND_UP_KEY_BR_OPEN, COMMAND_UP_KEY_BR_CLOSE,
+    COMMAND_V, COMMAND_VO, COMMAND_VOL, COMMAND_VOLU, COMMAND_VOLUM, COMMAND_VOLUME, COMMAND_VOLUME_, COMMAND_VOLUME_D, COMMAND_VOLUME_DO, COMMAND_VOLUME_DOW, COMMAND_VOLUME_DOWN,
+                                                                                                      COMMAND_VOLUME_M, COMMAND_VOLUME_MU, COMMAND_VOLUME_MUT, COMMAND_VOLUME_MUTE,
+                                                                                                      COMMAND_VOLUME_U, COMMAND_VOLUME_UP,
+                                                                                                      
 };
 
 class animacro_parser
@@ -102,6 +106,7 @@ private:
 
     bool append_keycode(char c);
     bool append_keycode(uint8_t keycode, uint8_t mod, uint8_t r_id);
+    bool append_keycode(uint16_t keycode_16, uint8_t r_id);
     bool append_null_node(uint8_t r_id);
     bool append_delay_node(uint32_t delay_us);
 
