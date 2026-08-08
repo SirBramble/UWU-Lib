@@ -10,7 +10,7 @@
 #endif
 
 #ifndef KEY_LED_MAX_BRIGHTNESS
-#define KEY_LED_MAX_BRIGHTNESS 100
+#define KEY_LED_MAX_BRIGHTNESS 50
 #endif
 
 #ifndef WALL_AMOUNT_LEDS
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef WALL_LED_MAX_BRIGHTNESS
-#define WALL_LED_MAX_BRIGHTNESS 3
+#define WALL_LED_MAX_BRIGHTNESS 2
 #endif
 
 #ifndef CONFIG_FILE_PATH

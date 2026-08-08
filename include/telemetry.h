@@ -22,7 +22,7 @@ namespace uwu
 class telemetry
 {
 public:
-    telemetry(kts1622* expander2);
+    explicit telemetry(kts1622* expander2);
 
     void init();
 

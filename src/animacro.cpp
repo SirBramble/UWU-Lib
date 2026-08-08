@@ -72,6 +72,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             PRINT("COMMAND: %c\n", m_am_str[m_am_pos]);
             switch (m_am_str[m_am_pos])
             {
+                case 'A':
+                    m_am_state = COMMAND_A;
+                    break;
                 case 'B':
                     m_am_state = COMMAND_B;
                     break;
@@ -93,11 +96,17 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 case 'N':
                     m_am_state = COMMAND_N;
                     break;
+                case 'O':
+                    m_am_state = COMMAND_O;
+                    break;
                 case 'R':
                     m_am_state = COMMAND_R;
                     break;
                 case 'S':
                     m_am_state = COMMAND_S;
+                    break;
+                case 'T':
+                    m_am_state = COMMAND_T;
                     break;
                 case 'U':
                     m_am_state = COMMAND_U;
@@ -128,6 +137,30 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 next_char = false;
             }
             break;
+        // Command AE
+        case am_state_t::COMMAND_A:
+			PRINT("COMMAND_A\n");
+			switch (m_am_str[m_am_pos])
+			{
+				case 'E':
+					m_am_state = COMMAND_AE;
+					break;
+				default:
+					m_am_state = ERROR;
+					break;
+			}
+			break;
+		case am_state_t::COMMAND_AE:
+			PRINT("COMMAND_AE\n");
+			switch (m_am_str[m_am_pos])
+			{
+				default:
+					bool success = append_keycode(0x34,0,RID_KEYBOARD);
+					m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+					next_char = false;
+					break;
+			}
+			break;
 
         // COMMAND BACKSPACE
         case am_state_t::COMMAND_B:
@@ -281,6 +314,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 case 'A':
                     m_am_state = COMMAND_DELA;
                     break;
+                case 'E':
+                    m_am_state = COMMAND_DELE;
+                    break;
                 default:
                     m_am_state = ERROR;
                     break;
@@ -337,6 +373,41 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
                 default:
                     m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_DELE:
+            PRINT("COMMAND_DELE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'T':
+                    m_am_state = COMMAND_DELET;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_DELET:
+            PRINT("COMMAND_DELET\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_DELETE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_DELETE:
+            PRINT("COMMAND_DELETE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x4C,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
                     break;
             }
             break;
@@ -1703,6 +1774,31 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
             }
             break;
+        
+        // COMMAND OE
+        case am_state_t::COMMAND_O:
+            PRINT("COMMAND_O\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_OE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_OE:
+            PRINT("COMMAND_OE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x33,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
 
         // COMMAND R_ALT/R_KEY/R_META/R_SHIFT
         case am_state_t::COMMAND_R:
@@ -2064,16 +2160,67 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             }
             break;
 
-        // COMMAND UP_KEY
+		// COMMAND TAB
+        case am_state_t::COMMAND_T:
+			PRINT("COMMAND_T\n");
+			switch (m_am_str[m_am_pos])
+			{
+				case 'A':
+					m_am_state = COMMAND_TA;
+					break;
+				default:
+					m_am_state = ERROR;
+					break;
+			}
+			break;
+		case am_state_t::COMMAND_TA:
+			PRINT("COMMAND_TA\n");
+			switch (m_am_str[m_am_pos])
+			{
+				case 'B':
+					m_am_state = COMMAND_TAB;
+					break;
+				default:
+					m_am_state = ERROR;
+					break;
+			}
+			break;
+		case am_state_t::COMMAND_TAB:
+			PRINT("COMMAND_TAB\n");
+			switch (m_am_str[m_am_pos])
+			{
+				default:
+					bool success = append_keycode(0x2B,0,RID_KEYBOARD);
+					m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+					next_char = false;
+					break;
+			}
+			break;
+
+        // COMMAND UP_KEY/UE
         case am_state_t::COMMAND_U:
             PRINT("COMMAND_U\n");
             switch (m_am_str[m_am_pos])
             {
+                case 'E':
+                    m_am_state = COMMAND_UE;
+                    break;
                 case 'P':
                     m_am_state = COMMAND_UP;
                     break;
                 default:
                     m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_UE:
+            PRINT("COMMAND_UE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x2F,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
                     break;
             }
             break;
