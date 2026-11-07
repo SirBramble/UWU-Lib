@@ -106,11 +106,8 @@ bool key::is_single()
         num_allowed_allocated_codes = 2;
 
     if(m_root->next !=nullptr)
-    {
-        if(m_root->r_id == RID_CONSUMER_CONTROL)
-            Serial.printf("RID_WITH_CONSUMER has follower!");
         return false;
-    }
+
     if(m_root->mod != 0 && (m_root->codes[num_allowed_allocated_codes-1] != 0))
         return false;
     for(int i = num_allowed_allocated_codes; i < 6; i++)

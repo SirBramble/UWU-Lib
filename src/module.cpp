@@ -498,6 +498,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     /* Check for key layer effect (Int) */
     if (jsp->stack_pos >=2 && type == LWJSON_STREAM_TYPE_NUMBER && strcmp(jsp->stack[c_stack_pos_layer_level].meta.name, "keys") == 0 && strcmp(jsp->stack[jsp->stack_pos-1].meta.name, "target_layer") == 0)
     {
+        PRINT("target layer: %d\n", atoi(jsp->data.str.buff));
         uint16_t target_layer = atoi(jsp->data.str.buff);
         key* k = get_key(m_parser_key, m_parser_layer);
         if(k == nullptr)

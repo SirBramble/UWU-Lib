@@ -57,7 +57,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             if(m_am_str[m_am_pos] == '\0')
                 break;
 
-            if(isprint((unsigned char)m_am_str[m_am_pos]) && m_am_str[m_am_pos] != '\\')
+            if((isprint((unsigned char)m_am_str[m_am_pos]) || m_am_str[m_am_pos] == '^') && m_am_str[m_am_pos] != '\\')
             {
                 append_keycode(m_am_str[m_am_pos]);
                 break;
@@ -87,6 +87,15 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 case 'F':
                     m_am_state = COMMAND_F;
                     break;
+                case 'G':
+                    m_am_state = COMMAND_G;
+                    break;
+                case 'H':
+                    m_am_state = COMMAND_H;
+                    break;
+                case 'I':
+                    m_am_state = COMMAND_I;
+                    break;
                 case 'K':
                     m_am_state = COMMAND_K;
                     break;
@@ -98,6 +107,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
                 case 'O':
                     m_am_state = COMMAND_O;
+                    break;
+                case 'P':
+                    m_am_state = COMMAND_P;
                     break;
                 case 'R':
                     m_am_state = COMMAND_R;
@@ -558,11 +570,25 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             PRINT("COMMAND_EN\n");
             switch (m_am_str[m_am_pos])
             {
+                case 'D':
+                    m_am_state = COMMAND_END;
+                    break;
                 case 'T':
                     m_am_state = COMMAND_ENT;
                     break;
                 default:
                     m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_END:
+            PRINT("COMMAND_END\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x4D,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
                     break;
             }
             break;
@@ -985,6 +1011,186 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             {
                 default:
                     bool success = append_keycode(HID_KEY_F24,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+
+        case am_state_t::COMMAND_G:
+            PRINT("COMMAND_G\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'R':
+                    m_am_state = COMMAND_GR;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_GR:
+            PRINT("COMMAND_GR\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'A':
+                    m_am_state = COMMAND_GRA;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_GRA:
+            PRINT("COMMAND_GRA\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'V':
+                    m_am_state = COMMAND_GRAV;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_GRAV:
+            PRINT("COMMAND_GRAV\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_GRAVE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_GRAVE:
+            PRINT("COMMAND_GRAVE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x2E,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+
+        case am_state_t::COMMAND_H:
+            PRINT("COMMAND_H\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'O':
+                    m_am_state = COMMAND_HO;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_HO:
+            PRINT("COMMAND_HO\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'M':
+                    m_am_state = COMMAND_HOM;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_HOM:
+            PRINT("COMMAND_HOM\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_HOME;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_HOME:
+            PRINT("COMMAND_HOME\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x4A,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+
+        case am_state_t::COMMAND_I:
+            PRINT("COMMAND_I\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'N':
+                    m_am_state = COMMAND_IN;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_IN:
+            PRINT("COMMAND_IN\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'S':
+                    m_am_state = COMMAND_INS;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_INS:
+            PRINT("COMMAND_INS\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_INSE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_INSE:
+            PRINT("COMMAND_INSE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'R':
+                    m_am_state = COMMAND_INSER;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_INSER:
+            PRINT("COMMAND_INSER\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'T':
+                    m_am_state = COMMAND_INSERT;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_INSERT:
+            PRINT("COMMAND_INSERT\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x49,0,RID_KEYBOARD);
                     m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
                     next_char = false;
                     break;
@@ -1802,7 +2008,179 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
             }
             break;
-
+        case am_state_t::COMMAND_P:
+            PRINT("COMMAND_P\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'A':
+                    m_am_state = COMMAND_PA;
+                    break;
+                case 'G':
+                    m_am_state = COMMAND_PG;
+                    break;
+                case 'R':
+                    m_am_state = COMMAND_PR;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PA:
+            PRINT("COMMAND_PA\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'U':
+                    m_am_state = COMMAND_PAU;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PAU:
+            PRINT("COMMAND_PAU\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'S':
+                    m_am_state = COMMAND_PAUS;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PAUS:
+            PRINT("COMMAND_PAUS\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'E':
+                    m_am_state = COMMAND_PAUSE;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PAUSE:
+            PRINT("COMMAND_PAUSE\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x48,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PG:
+            PRINT("COMMAND_PG\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'D':
+                    m_am_state = COMMAND_PGD;
+                    break;
+                case 'U':
+                    m_am_state = COMMAND_PGU;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PGD:
+            PRINT("COMMAND_PGD\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'N':
+                    m_am_state = COMMAND_PGDN;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PGDN:
+            PRINT("COMMAND_PGDN\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x4E,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PGU:
+            PRINT("COMMAND_PGU\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'P':
+                    m_am_state = COMMAND_PGUP;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PGUP:
+            PRINT("COMMAND_PGUP\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x4B,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PR:
+            PRINT("COMMAND_PR\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'I':
+                    m_am_state = COMMAND_PRI;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PRI:
+            PRINT("COMMAND_PRI\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'N':
+                    m_am_state = COMMAND_PRIN;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PRIN:
+            PRINT("COMMAND_PRIN\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'T':
+                    m_am_state = COMMAND_PRINT;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_PRINT:
+            PRINT("COMMAND_PRINT\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x46,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
+                    break;
+            }
+            break;
         // COMMAND R_ALT/R_KEY/R_META/R_SHIFT
         case am_state_t::COMMAND_R:
             PRINT("COMMAND_R\n");
@@ -1813,6 +2191,41 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
                 default:
                     m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_RO:
+            PRINT("COMMAND_RO\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'L':
+                    m_am_state = COMMAND_ROL;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_ROL:
+            PRINT("COMMAND_ROL\n");
+            switch (m_am_str[m_am_pos])
+            {
+                case 'L':
+                    m_am_state = COMMAND_ROLL;
+                    break;
+                default:
+                    m_am_state = ERROR;
+                    break;
+            }
+            break;
+        case am_state_t::COMMAND_ROLL:
+            PRINT("COMMAND_ROLL\n");
+            switch (m_am_str[m_am_pos])
+            {
+                default:
+                    bool success = append_keycode(0x47,0,RID_KEYBOARD);
+                    m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
+                    next_char = false;
                     break;
             }
             break;

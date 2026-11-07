@@ -64,7 +64,11 @@ void keyboard::update()
             {
                 key* k = get_key(c_keyboard_key_remap_table[row][col]);
                 if(k != nullptr)
-                    k->update(digital_read(c_keyboard_col_pins[col]));
+                {
+                    key_state_t state = k->update(digital_read(c_keyboard_col_pins[col]));
+                    if(k->has_layer_change() && state == key_state_t::PRESSED_TRANSITION)
+                        m_current_layer = k->get_target_layer();
+                }
             }
         }
         digital_write(c_keyboard_row_pins[row], LOW);
