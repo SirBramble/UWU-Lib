@@ -698,6 +698,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                 case '9':
                     m_am_state = COMMAND_F19;
                     break;
+                case '0':
+                    m_am_state = COMMAND_F10;
+                    break;
                 default:
                     bool success = append_keycode(HID_KEY_F1,0,RID_KEYBOARD);
                     m_am_state = success ? am_state_t::IDLE : am_state_t::ERROR;
@@ -722,6 +725,9 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
                     break;
                 case '4':
                     m_am_state = COMMAND_F24;
+                    break;
+                case '0':
+                    m_am_state = COMMAND_F20;
                     break;
                 default:
                     bool success = append_keycode(HID_KEY_F2,0,RID_KEYBOARD);
@@ -2315,7 +2321,7 @@ bool animacro_parser::am_data_parse(const char* c_str, key* k)
             {
                 case '{':
                     m_num_1 = 0;
-                    m_am_state = COMMAND_L_KEY_BR_OPEN;
+                    m_am_state = COMMAND_R_KEY_BR_OPEN;
                     break;
                 default:
                     bool success = append_keycode(HID_KEY_ARROW_RIGHT,0,RID_KEYBOARD);
@@ -3017,6 +3023,8 @@ bool animacro_parser::am_color_parse(const char* c_str, color_t* color)
 bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color_effect_t* effect)
 {
     PRINT("layer_color_effect_parse: %s\n", c_str);
+    if(c_str == nullptr)
+        return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
@@ -3046,6 +3054,8 @@ bool animacro_parser::am_layer_color_effect_parse(const char* c_str, layer_color
 bool animacro_parser::am_display_color_effect_parse(const char* c_str, display_color_effect_t* effect)
 {
     PRINT("display_color_effect_parse: %s\n", c_str);
+    if(c_str == nullptr)
+        return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
@@ -3075,6 +3085,8 @@ bool animacro_parser::am_display_color_effect_parse(const char* c_str, display_c
 bool animacro_parser::am_display_render_mode_parse(const char* c_str, led_wall_render_mode* mode)
 {
     PRINT("display_mode_parse: %s\n", c_str);
+    if(c_str == nullptr)
+        return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(mode == nullptr)
@@ -3098,6 +3110,8 @@ bool animacro_parser::am_display_render_mode_parse(const char* c_str, led_wall_r
 bool animacro_parser::am_key_color_effect_parse(const char* c_str, key_color_effect_t* effect)
 {
     PRINT("key_color_effect_parse: %s\n", c_str);
+    if(c_str == nullptr)
+        return false;
     if(c_str[0] == '\0')  // If empty String is passed...Counts more as DONE than ERROR...
         return true;
     if(effect == nullptr)
