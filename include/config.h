@@ -47,16 +47,11 @@
 #endif
 
 /**
- * @brief Size of the filesystem mounted via USB.
- * 
- */
-#ifndef DISK_SIZE_MB
-#define DISK_SIZE_MB 1
-#endif
-
-/**
- * @brief Size of the filesystem cache. Should me multiple of of 4kB.
- * 
+ * @brief PSRAM sector cache size in KiB; positive multiple of 4.
+ * The firmware linker reservation defines disk size, not a C++ macro.
+ * Ordinary MSC writes are acknowledged from volatile PSRAM (write-back).
+ * Eject/sync/FUA wait for flash verification. Power loss before a flush can
+ * lose accepted writes; disconnect is not a substitute for successful eject.
  */
 #ifndef DISK_CACHE_SIZE_KB
 #define DISK_CACHE_SIZE_KB 128

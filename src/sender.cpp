@@ -308,7 +308,15 @@ void uwu::clear_keycode(keycode_node* root, bool is_single)
 
 void uwu::sender_loop()
 {
-    if(s_telem->is_pwr_on() && !s_telem->is_usb_in())
+#ifdef TINYUSB_NEED_POLLING_TASK
+    TinyUSBDevice.task();
+#endif
+
+    // An enumerated USB host takes priority over power-detection telemetry.
+    // Use mounted(), not HID ready(): a busy endpoint still belongs to USB.
+    if (TinyUSBDevice.mounted())
+        bluetooth_mode = false;
+    else if(s_telem->is_pwr_on() && !s_telem->is_usb_in())
         bluetooth_mode = true;
     else
         bluetooth_mode = false;
@@ -319,7 +327,4 @@ void uwu::sender_loop()
     #endif
 
 
-#ifdef TINYUSB_NEED_POLLING_TASK
-    TinyUSBDevice.task();
-#endif
 }

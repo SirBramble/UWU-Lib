@@ -25,7 +25,7 @@ public:
 
     void update_keymap(const char* json_str);
 #if IS_MCU_VERSION != 0
-    void update_keymap_from_file(FatVolume &volume);
+    bool update_keymap_from_file(FatVolume &volume);
 #endif
 
     virtual key* get_key(int key, int layer) = 0;
@@ -85,14 +85,14 @@ public:
 
     key* get_key(int key, int layer)
     {
-        if(layer < MAX_NUM_LAYERS)
+        if(layer >= 0 && layer < MAX_NUM_LAYERS)
             return m_layers[layer].get_key(key);
         return nullptr;
     }
 
     _layer* get_layer(int layer)
     {
-        if(layer < MAX_NUM_LAYERS)
+        if(layer >= 0 && layer < MAX_NUM_LAYERS)
             return &m_layers[layer];
         return nullptr;
     }

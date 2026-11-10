@@ -25,45 +25,52 @@ const int c_stack_pos_rgb           = 9;
 
 #if IS_MCU_VERSION != 0
 
-void _module::update_keymap_from_file(FatVolume &volume)
+bool _module::update_keymap_from_file(FatVolume &volume)
 {
-
-    init(); // Reset Structure structure
-
-    PRINT("this: %p", (void*)this);
-
-    while (volume.isBusy());
-
     File32 file = volume.open(CONFIG_FILE_PATH, O_RDONLY);
-
     if (!file) {
         Serial.println("Open file failed");
-        return;
+        return false;
     }
-
-    Serial.printf("Reading %s", CONFIG_FILE_PATH);
-
-    lwjsonr_t res;
-    lwjson_stream_init(&m_stream_parser, &_module::update_keymap_json_callback);
-    lwjson_stream_set_user_data(&m_stream_parser, this);    // link _module object to stream parser struct
-
+    // Validate the complete immutable snapshot before resetting live state.
+    // Reject incomplete documents and non-whitespace after the closing token.
+    lwjson_stream_init(&m_stream_parser, nullptr);
+    bool complete = false;
     while (file.available()) {
-        char c = file.read();
-        res = lwjson_stream_parse(&m_stream_parser, c);
-        if (res == lwjsonSTREAMINPROG) {
-        } else if (res == lwjsonSTREAMWAITFIRSTCHAR) {
-            PRINT("Waiting first character\r\n");
-        } else if (res == lwjsonSTREAMDONE) {
-            PRINT("Done\r\n");
-        } else {
-            PRINT("JSON Error\r\n");
-            break;
+        const int value = file.read();
+        if (value < 0) { file.close(); return false; }
+        const char c = value;
+        if (complete) {
+            if (c != ' ' && c != '\t' && c != '\r' && c != '\n') {
+                file.close();
+                return false;
+            }
+            continue;
+        }
+        const auto result = lwjson_stream_parse(&m_stream_parser, c);
+        if (result == lwjsonSTREAMDONE) complete = true;
+        else if (result != lwjsonSTREAMINPROG && result != lwjsonSTREAMWAITFIRSTCHAR) {
+            file.close();
+            return false;
         }
     }
-
-    PRINT("Parsing completed\r\n");
-
+    if (!complete || !file.seekSet(0)) { file.close(); return false; }
+    if (!init()) { file.close(); return false; }
+    m_parser_layer = m_parser_key = m_parser_display_index = 0;
+    lwjson_stream_init(&m_stream_parser, &_module::update_keymap_json_callback);
+    lwjson_stream_set_user_data(&m_stream_parser, this);
+    while (file.available()) {
+        const int value = file.read();
+        if (value < 0) { file.close(); return false; }
+        const auto result = lwjson_stream_parse(&m_stream_parser, char(value));
+        if (result == lwjsonSTREAMDONE) break;
+        if (result != lwjsonSTREAMINPROG && result != lwjsonSTREAMWAITFIRSTCHAR) {
+            file.close();
+            return false;
+        }
+    }
     file.close();
+    return true;
 }
 
 #endif
@@ -143,7 +150,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     {
         PRINT("layer rgb [%d]: %s\n", jsp->stack[jsp->stack_pos-1].meta.index, jsp->data.str.buff);
 
-        if(m_parser_layer >= MAX_NUM_LAYERS)
+        if(m_parser_layer < 0 || m_parser_layer >= MAX_NUM_LAYERS)
             return;
 
         _layer* l = get_layer(m_parser_layer);
@@ -163,7 +170,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     {
         PRINT("layer effect: %s\n", jsp->data.str.buff);
 
-        if(m_parser_layer >= MAX_NUM_LAYERS)
+        if(m_parser_layer < 0 || m_parser_layer >= MAX_NUM_LAYERS)
             return;
 
         _layer* l = get_layer(m_parser_layer);
@@ -182,7 +189,7 @@ void _module::update_keymap_handle_json_callback(lwjson_stream_parser_t* jsp, lw
     {
         PRINT("layer rgb effect speed: %d\n", atoi(jsp->data.str.buff));
 
-        if(m_parser_layer >= MAX_NUM_LAYERS)
+        if(m_parser_layer < 0 || m_parser_layer >= MAX_NUM_LAYERS)
             return;
 
         _layer* l = get_layer(m_parser_layer);

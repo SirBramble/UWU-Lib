@@ -38,7 +38,12 @@ public:
     void clear_render_buffer();
     void render_update();
 
-    void set_flash_volume(FatVolume* flash_volume){m_flash_volume = flash_volume;}
+    // Coordinated read access. Begin/end must enclose every file load;
+    // PSRAM playback does not retain the returned volume.
+    void set_flash_read_session(FatVolume* (*begin)(), void (*end)()) {
+        m_begin_read = begin;
+        m_end_read = end;
+    }
 
     void set_pixel(uint16_t x, uint16_t y, color_t color);
 
@@ -47,7 +52,7 @@ public:
 
     led_wall_render_node* node(int pos)
     {
-        if(pos >= LED_WALL_NODE_RENDER_BUFFER_LEN)
+        if(pos < 0 || pos >= LED_WALL_NODE_RENDER_BUFFER_LEN)
             return nullptr;
         return &m_render_buffer[pos];
     }
@@ -76,8 +81,9 @@ private:
     size_t m_gif_file_size = 0;
     bool m_gif_loaded_to_psram = false;
 
-    // Volume pointer storage
-    FatVolume* m_flash_volume = nullptr;
+    // No retained mounted-volume pointer: PSRAM playback outlives read sessions.
+    FatVolume* (*m_begin_read)() = nullptr;
+    void (*m_end_read)() = nullptr;
 };
 
 }

@@ -189,7 +189,7 @@ void led_wall::update()
         // If no node is found, something wrong! But we'll ignore that and just go to start...
         if (!found)
         {
-            Serial.printf("no valid found!!!\n");
+            // Serial.printf("no valid found!!!\n");
             m_render_buffer_index = 0;
         }
 
@@ -204,13 +204,16 @@ void led_wall::update()
 
 bool led_wall::load_gif_to_psram(char* path)
 {
-    if(m_flash_volume == nullptr)
+    if (!m_begin_read || !m_end_read) return false;
+    FatVolume* current = m_begin_read();
+    if(current == nullptr)
         return false;
 
-    File32 file = m_flash_volume->open(path, O_RDONLY);
+    File32 file = current->open(path, O_RDONLY);
 
     if (!file) {
         Serial.printf("Open file (%s) failed\n", path);
+        m_end_read();
         return false;
     }
 
@@ -218,13 +221,21 @@ bool led_wall::load_gif_to_psram(char* path)
     m_gif_data = (uint8_t *)pmalloc(m_gif_file_size);   // PSRAM on arduino-pico
     if (!m_gif_data) {
         file.close();
+        m_end_read();
         return false;
     }
 
     size_t got = file.read(m_gif_data, m_gif_file_size);
     file.close();
+    m_end_read();
 
-    return got == m_gif_file_size;
+    if (got != m_gif_file_size || !m_gif_file_size) {
+        free(m_gif_data);
+        m_gif_data = nullptr;
+        m_gif_file_size = 0;
+        return false;
+    }
+    return true;
 }
 
 void led_wall::unload_gif_from_psram()
